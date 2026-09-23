@@ -1,0 +1,4316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Sprout — Your Little Space</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+
+
+    <style>
+    @font-face {
+        font-family: "Danila";
+        src: url("sprout_assets/Danila-Demo.ttf") format("truetype");
+        font-weight: 400 700;
+        font-style: normal;
+        font-display: swap;
+    }
+    </style>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #faf9f3;
+            --card: rgba(255,255,255,.72);
+            --text: #26372c;
+            --muted: #7d8981;
+            --green: #52795f;
+            --green-dark: #315440;
+            --border: rgba(62, 87, 69, .12);
+
+            --glow: rgba(105, 155, 115, .14);
+            --mood-bg: #edf5ec;
+            --mood-accent: #52795f;
+
+            --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+            --ease-smooth: cubic-bezier(.22, 1, .36, 1);
+            --ease-grow: cubic-bezier(.16, 1, .3, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+            transition: background .8s ease;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: .022;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* =========================
+           AMBIENT + GARDEN
+        ========================= */
+
+        .ambient {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: .45;
+            transition: background 1.2s ease, transform 8s ease-in-out;
+        }
+
+        .orb.one {
+            width: 420px; height: 420px;
+            background: #dcefd9;
+            top: -180px; left: -140px;
+            animation: driftOne 12s ease-in-out infinite alternate;
+        }
+
+        .orb.two {
+            width: 380px; height: 380px;
+            background: #ebe1f5;
+            right: -150px; top: 20%;
+            animation: driftTwo 14s ease-in-out infinite alternate;
+        }
+
+        .orb.three {
+            width: 330px; height: 330px;
+            background: #f5e1d6;
+            bottom: -170px; left: 35%;
+            animation: driftThree 16s ease-in-out infinite alternate;
+        }
+
+        .orb.mood {
+            width: 300px; height: 300px;
+            background: var(--mood-accent);
+            opacity: .12;
+            right: 20%; bottom: 5%;
+            animation: driftOne 18s ease-in-out infinite alternate;
+            transition: background 1s ease;
+        }
+
+        @keyframes driftOne { to { transform: translate(60px, 50px) scale(1.08); } }
+        @keyframes driftTwo { to { transform: translate(-55px, 40px) scale(1.12); } }
+        @keyframes driftThree { to { transform: translate(30px, -50px) scale(1.1); } }
+
+        /* drifting spores / pollen */
+        .spore {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--mood-accent);
+            opacity: .16;
+            animation: sporeRise linear infinite;
+            transition: background 1s ease;
+        }
+
+        @keyframes sporeRise {
+            0% {
+                transform: translateY(104vh) translateX(0) scale(.6);
+                opacity: 0;
+            }
+            12% { opacity: .2; }
+            88% { opacity: .2; }
+            100% {
+                transform: translateY(-10vh) translateX(70px) scale(1.1);
+                opacity: 0;
+            }
+        }
+
+        .leaf {
+            position: absolute;
+            font-size: 15px;
+            opacity: .18;
+            animation: floatLeaf linear infinite;
+        }
+
+        @keyframes floatLeaf {
+            0%   { transform: translateY(105vh) rotate(0deg); opacity: 0; }
+            10%  { opacity: .22; }
+            90%  { opacity: .22; }
+            100% { transform: translateY(-15vh) rotate(380deg); opacity: 0; }
+        }
+
+        /* ===== GROUND VINE — grows with scroll ===== */
+
+        .vine-rail {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 54px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .vine-rail svg {
+            height: 100%;
+            width: 100%;
+        }
+
+        .vine-path {
+            fill: none;
+            stroke: var(--mood-accent);
+            stroke-width: 2;
+            stroke-linecap: round;
+            opacity: .38;
+            transition: stroke .9s ease;
+        }
+
+        .vine-leaf {
+            fill: var(--mood-accent);
+            opacity: 0;
+            transform-box: fill-box;
+            transform-origin: 0% 50%;
+            transform: scale(0) rotate(-25deg);
+            transition:
+                transform .7s var(--ease-spring),
+                opacity .5s ease,
+                fill .9s ease;
+        }
+
+        .vine-leaf.open {
+            opacity: .4;
+            transform: scale(1) rotate(0deg);
+        }
+
+        @media (max-width: 1100px) {
+            .vine-rail { display: none; }
+        }
+
+        /* =========================
+           SCROLL PROGRESS (as a stem)
+        ========================= */
+
+        .scroll-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            width: 0%;
+            z-index: 500;
+            background: linear-gradient(90deg, #7fae8b, var(--mood-accent));
+            box-shadow: 0 0 12px var(--glow);
+            transition: width .12s linear, background .8s ease;
+        }
+
+        .scroll-progress::after {
+            content: "🌱";
+            position: absolute;
+            right: -10px;
+            top: -9px;
+            font-size: 13px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,.12));
+        }
+
+        /* =========================
+           NAVBAR
+        ========================= */
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: min(1180px, calc(100% - 48px));
+            margin: 0 auto;
+            padding: 22px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: navIn .7s var(--ease-smooth);
+            transition: padding .35s ease;
+        }
+
+        nav::before {
+            content: "";
+            position: absolute;
+            inset: -1px -24px;
+            background: rgba(250,249,243,.72);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid transparent;
+            opacity: 0;
+            transition: opacity .4s ease, border-color .4s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        nav.stuck::before { opacity: 1; border-bottom-color: var(--border); }
+        nav.stuck { padding: 13px 0; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            cursor: pointer;
+        }
+
+        .brand-icon {
+            position: relative;
+            width: 43px; height: 43px;
+            border-radius: 14px;
+            background: linear-gradient(140deg, #e9f4e7, #d6e9d2);
+            display: grid;
+            place-items: center;
+            font-size: 21px;
+            box-shadow: 0 8px 25px rgba(60,90,67,.12);
+            transition: transform .55s var(--ease-spring), box-shadow .4s ease;
+        }
+
+        .brand-icon span {
+            display: block;
+            animation: sway 4s ease-in-out infinite;
+            transform-origin: 50% 90%;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50%      { transform: rotate(5deg); }
+        }
+
+        .brand:hover .brand-icon {
+            transform: rotate(-10deg) scale(1.12);
+            box-shadow: 0 14px 34px rgba(60,90,67,.22);
+        }
+
+        /* growth rings pulsing out */
+        .brand-icon::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            border: 1.5px solid var(--mood-accent);
+            opacity: 0;
+        }
+
+        .brand:hover .brand-icon::after { animation: ringOut .9s ease; }
+
+        @keyframes ringOut {
+            0%   { opacity: .55; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.55); }
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 19px;
+            letter-spacing: -.3px;
+            background: linear-gradient(100deg, var(--text), var(--mood-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: background .8s ease;
+        }
+
+        .nav-right {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px;
+            border-radius: 100px;
+            background: rgba(255,255,255,.5);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-indicator {
+            position: absolute;
+            top: 5px; bottom: 5px;
+            border-radius: 100px;
+            background: var(--green-dark);
+            box-shadow: 0 8px 20px rgba(49,84,64,.28);
+            transition:
+                left .5s var(--ease-spring),
+                width .5s var(--ease-spring),
+                background .8s ease;
+            z-index: 0;
+        }
+
+        .nav-button {
+            position: relative;
+            z-index: 1;
+            border: 0;
+            background: transparent;
+            color: #53635a;
+            padding: 9px 15px;
+            border-radius: 100px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color .35s ease, transform .25s var(--ease-spring);
+        }
+
+        .nav-button:hover { transform: translateY(-1px); color: var(--green-dark); }
+        .nav-button.active, .nav-button.active:hover { color: white; }
+
+        /* tiny sprout above active tab */
+        .nav-button.active::before {
+            content: "🌿";
+            position: absolute;
+            top: -13px;
+            left: 50%;
+            font-size: 10px;
+            transform: translateX(-50%) scale(0);
+            animation: sproutUp .55s var(--ease-spring) forwards;
+        }
+
+        @keyframes sproutUp {
+            to { transform: translateX(-50%) scale(1); }
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        main {
+            width: min(1180px, calc(100% - 48px));
+            margin: 0 auto;
+            padding: 48px 0 80px;
+        }
+
+        .view { display: none; }
+
+        .view.active {
+            display: block;
+            animation: pageIn .6s var(--ease-smooth);
+        }
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero { margin-bottom: 35px; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 100px;
+            background: rgba(255,255,255,.7);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            color: var(--green-dark);
+            font-size: 12px;
+            margin-bottom: 18px;
+            animation: pageIn .6s var(--ease-smooth) .05s both;
+            transition: transform .3s var(--ease-spring), box-shadow .3s ease;
+        }
+
+        .eyebrow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--glow);
+        }
+
+        .eyebrow .seed {
+            width: 7px; height: 7px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            background: var(--mood-accent);
+            animation: seedPulse 2.4s ease-in-out infinite;
+            transition: background .8s ease;
+        }
+
+        @keyframes seedPulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--glow); opacity: 1; }
+            50%      { box-shadow: 0 0 0 8px transparent; opacity: .5; }
+        }
+
+        .hero h1 {
+            font-family: "Playfair Display", serif;
+            font-size: clamp(44px, 6vw, 68px);
+            line-height: 1.02;
+            letter-spacing: -2px;
+            font-weight: 500;
+        }
+
+        .hero h1 .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(26px) rotate(3deg);
+            animation: wordGrow .85s var(--ease-grow) forwards;
+        }
+
+        @keyframes wordGrow {
+            to { opacity: 1; transform: translateY(0) rotate(0); }
+        }
+
+        .hero h1 span.accent {
+            color: var(--mood-accent);
+            font-style: italic;
+            transition: color .7s ease;
+        }
+
+        .hero p {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 520px;
+            animation: pageIn .7s var(--ease-smooth) .55s both;
+        }
+
+        /* =========================
+           GRID + CARDS
+        ========================= */
+
+        .today-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) minmax(280px, .75fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .card {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 27px;
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 25px 70px rgba(48,72,54,.08),
+                0 5px 20px rgba(48,72,54,.04);
+            transition:
+                box-shadow .6s ease,
+                border-color .6s ease,
+                background .6s ease,
+                transform .5s var(--ease-smooth);
+        }
+
+        /* every card sprouts a small leaf in its corner on hover */
+        .card .corner-sprout {
+            position: absolute;
+            top: 14px; right: 16px;
+            font-size: 13px;
+            opacity: 0;
+            transform: scale(.4) rotate(-35deg);
+            transform-origin: bottom left;
+            transition: opacity .4s ease, transform .55s var(--ease-spring);
+            pointer-events: none;
+        }
+
+        .card:hover .corner-sprout {
+            opacity: .55;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px) scale(.985);
+            transition:
+                opacity .8s var(--ease-grow),
+                transform .8s var(--ease-grow);
+        }
+
+        .reveal.shown {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .journal-card { padding: 30px; overflow: hidden; }
+
+        .journal-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 27px;
+            padding: 1px;
+            background: linear-gradient(120deg, transparent 20%, var(--mood-accent) 50%, transparent 80%);
+            background-size: 300% 100%;
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity .6s ease;
+            pointer-events: none;
+        }
+
+        .journal-card.typing::before {
+            opacity: .55;
+            animation: sweepEdge 4s linear infinite;
+        }
+
+        @keyframes sweepEdge { to { background-position: -300% 0; } }
+
+        .journal-card.typing {
+            border-color: color-mix(in srgb, var(--mood-accent) 30%, transparent);
+            box-shadow: 0 25px 75px rgba(48,72,54,.09), 0 0 45px var(--glow);
+        }
+
+        /* section label with a growing stem */
+        .section-label {
+            position: relative;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-left: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-label::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 15px;
+            border-radius: 10px;
+            background: var(--mood-accent);
+            transform-origin: bottom;
+            animation: stemGrow .7s var(--ease-grow) both;
+            transition: background .8s ease;
+        }
+
+        .section-label::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: -1px;
+            width: 7px; height: 7px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--mood-accent);
+            transform: rotate(-45deg) scale(0);
+            animation: leafPop .5s var(--ease-spring) .5s both;
+            transition: background .8s ease;
+        }
+
+        @keyframes stemGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+        @keyframes leafPop  { to { transform: rotate(-45deg) scale(1); } }
+
+        /* =========================
+           MOODS
+        ========================= */
+
+        .moods {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 27px;
+        }
+
+        .mood {
+            position: relative;
+            overflow: visible;
+            min-width: 82px;
+            padding: 13px 12px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.72);
+            border-radius: 17px;
+            font-family: inherit;
+            cursor: pointer;
+            transition:
+                transform .35s var(--ease-spring),
+                background .4s ease,
+                border-color .4s ease,
+                box-shadow .35s ease;
+        }
+
+        /* sprout that grows out of the top when selected */
+        .mood .sprout-top {
+            position: absolute;
+            top: -11px;
+            left: 50%;
+            font-size: 12px;
+            transform: translateX(-50%) scale(0) rotate(-40deg);
+            transform-origin: bottom center;
+            transition: transform .6s var(--ease-spring);
+            pointer-events: none;
+        }
+
+        .mood.selected .sprout-top {
+            transform: translateX(-50%) scale(1) rotate(0deg);
+        }
+
+        .mood:hover {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 14px 30px rgba(48,72,54,.1);
+        }
+
+        .mood:hover .mood-emoji { transform: scale(1.22) rotate(-8deg); }
+        .mood:active { transform: translateY(-1px) scale(.96); }
+
+        .mood.selected {
+            background: var(--mood-bg);
+            border-color: color-mix(in srgb, var(--mood-accent) 35%, transparent);
+            box-shadow: 0 10px 25px var(--glow);
+            transform: translateY(-4px) scale(1.04);
+        }
+
+        .mood.selected .mood-name { color: var(--mood-accent); font-weight: 600; }
+        .mood.selected .mood-emoji { animation: emojiBounce .6s var(--ease-spring); }
+
+        @keyframes emojiBounce {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.35) rotate(10deg); }
+            70%  { transform: scale(.94) rotate(-4deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        .mood-emoji {
+            display: block;
+            font-size: 27px;
+            margin-bottom: 5px;
+            transition: transform .4s var(--ease-spring);
+        }
+
+        .mood-name {
+            color: #758178;
+            font-size: 11px;
+            transition: color .4s ease;
+        }
+
+        /* =========================
+           JOURNAL
+        ========================= */
+
+        .journal-wrap { position: relative; }
+
+        textarea {
+            width: 100%;
+            min-height: 280px;
+            resize: vertical;
+            border: 1.5px solid var(--border);
+            border-radius: 21px;
+            background: linear-gradient(
+                160deg,
+                rgba(237,245,236,.55) 0%,
+                rgba(255,255,255,.72) 40%,
+                rgba(240,235,252,.45) 100%
+            );
+            padding: 24px 24px 80px 24px;
+            color: var(--mood-accent);
+            font-family: "Danila", cursive;
+            font-size: 23px;
+            line-height: 1.8;
+            letter-spacing: 0.01em;
+            font-weight: 700;
+            outline: none;
+            transition:
+                border .35s ease,
+                box-shadow .5s ease,
+                background .5s ease,
+                color .8s ease,
+                transform .4s var(--ease-smooth);
+        }
+
+        textarea::placeholder {
+            color: color-mix(in srgb, var(--mood-accent) 38%, #b0bcb5);
+            font-weight: 400;
+            font-size: 17px;
+            transition: opacity .3s ease, color .8s ease;
+        }
+
+        textarea:focus::placeholder { opacity: .5; }
+
+        textarea:focus {
+            background: linear-gradient(
+                160deg,
+                rgba(237,245,236,.85) 0%,
+                rgba(255,255,255,.96) 40%,
+                rgba(240,235,252,.75) 100%
+            );
+            border-color: color-mix(in srgb, var(--mood-accent) 50%, transparent);
+            box-shadow:
+                0 0 0 5px var(--glow),
+                inset 0 2px 16px color-mix(in srgb, var(--mood-accent) 6%, transparent);
+            transform: translateY(-2px);
+            color: var(--mood-accent);
+        }
+
+        /* the plant that grows as you write */
+        .grow-plant {
+            position: absolute;
+            right: 16px;
+            bottom: 14px;
+            width: 54px;
+            height: 92px;
+            pointer-events: none;
+            opacity: .75;
+        }
+
+        .plant-stem {
+            fill: none;
+            stroke: var(--mood-accent);
+            stroke-width: 2.4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset .7s var(--ease-grow), stroke .9s ease;
+        }
+
+        .plant-leaf {
+            fill: var(--mood-accent);
+            transform-box: fill-box;
+            transform-origin: 0% 100%;
+            transform: scale(0);
+            transition: transform .6s var(--ease-spring), fill .9s ease;
+        }
+
+        .plant-leaf.grown { transform: scale(1); }
+
+        .plant-bloom {
+            fill: var(--mood-accent);
+            transform-box: fill-box;
+            transform-origin: center;
+            transform: scale(0);
+            transition: transform .7s var(--ease-spring), fill .9s ease;
+        }
+
+        .plant-bloom.grown {
+            transform: scale(1);
+            animation: bloomSway 3.5s ease-in-out infinite;
+        }
+
+        @keyframes bloomSway {
+            0%, 100% { transform: scale(1) rotate(-6deg); }
+            50%      { transform: scale(1.08) rotate(6deg); }
+        }
+
+        .typing-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            color: #a0a9a3;
+            font-size: 10px;
+        }
+
+        .depth-track {
+            flex: 1;
+            height: 4px;
+            margin: 0 14px;
+            border-radius: 10px;
+            background: rgba(62,87,69,.09);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .depth-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #8fbd99, var(--mood-accent));
+            transition: width .6s var(--ease-grow), background .8s ease;
+        }
+
+        #characterCount {
+            display: inline-block;
+            transition: color .3s ease, transform .3s var(--ease-spring);
+        }
+
+        #characterCount.bump {
+            transform: scale(1.18);
+            color: var(--mood-accent);
+        }
+
+        /* growth stage label */
+        .growth-stage {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--mood-accent);
+            font-weight: 600;
+            transition: color .8s ease;
+        }
+
+        .growth-stage .stage-icon {
+            display: inline-block;
+            transition: transform .5s var(--ease-spring);
+        }
+
+        .growth-stage.changed .stage-icon {
+            animation: stagePop .6s var(--ease-spring);
+        }
+
+        @keyframes stagePop {
+            0%   { transform: scale(.4) rotate(-30deg); }
+            60%  { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        /* =========================
+           CHIPS
+        ========================= */
+
+        .optional { margin-top: 24px; }
+
+        .optional-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .optional-title span { color: #a0a8a3; font-weight: 400; }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .chip {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.7);
+            color: #68756d;
+            border-radius: 100px;
+            padding: 9px 13px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition:
+                transform .3s var(--ease-spring),
+                background .3s ease,
+                border-color .3s ease,
+                box-shadow .3s ease;
+        }
+
+        .chip:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 8px 18px rgba(48,72,54,.08);
+        }
+
+        .chip:active { transform: scale(.94); }
+
+        .chip.selected {
+            background: var(--mood-bg);
+            border-color: color-mix(in srgb, var(--mood-accent) 40%, transparent);
+            color: var(--mood-accent);
+            font-weight: 600;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--glow);
+            animation: chipSprout .5s var(--ease-spring);
+        }
+
+        @keyframes chipSprout {
+            0%   { transform: scale(.88) translateY(-2px); }
+            55%  { transform: scale(1.12) translateY(-5px); }
+            100% { transform: scale(1) translateY(-2px); }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background: var(--glow);
+            animation: rippleOut .7s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleOut { to { transform: scale(3.4); opacity: 0; } }
+
+        /* =========================
+           SAVE
+        ========================= */
+
+        .save-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-top: 27px;
+        }
+
+        .privacy {
+            max-width: 470px;
+            color: #8a958d;
+            font-size: 10px;
+            line-height: 1.55;
+        }
+
+        .save-button {
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: none;
+            background: linear-gradient(135deg, var(--green-dark), #436b52);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 12px 28px rgba(49,84,64,.22);
+            transition:
+                transform .32s var(--ease-spring),
+                box-shadow .32s ease,
+                opacity .3s ease;
+        }
+
+        .save-button::before {
+            content: "";
+            position: absolute;
+            top: 0; left: -120%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+            transform: skewX(-20deg);
+        }
+
+        .save-button:hover::before { animation: sheen .9s ease; }
+        @keyframes sheen { to { left: 140%; } }
+
+        .save-button:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(49,84,64,.3);
+        }
+
+        .save-button:active { transform: scale(.95); }
+        .save-button.saving { opacity: .75; pointer-events: none; }
+
+        .save-button.saving::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+            background-size: 50% 100%;
+            animation: loadSweep 1.1s linear infinite;
+        }
+
+        @keyframes loadSweep {
+            0%   { background-position: -100% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        #message {
+            min-height: 20px;
+            margin-top: 13px;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        #message.show { animation: msgIn .45s var(--ease-spring); }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .success { color: #4d7957; }
+        .error   { color: #a24d48; }
+
+        /* sprouting burst on save */
+        .sparkle {
+            position: fixed;
+            z-index: 800;
+            pointer-events: none;
+            font-size: 14px;
+            animation: sparkleUp 1.3s var(--ease-grow) forwards;
+        }
+
+        @keyframes sparkleUp {
+            0% {
+                opacity: 1;
+                transform: translate(0,0) scale(.4) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(var(--rot));
+            }
+        }
+
+        /* big sprout that grows from the button on success */
+        .grow-burst {
+            position: fixed;
+            z-index: 810;
+            pointer-events: none;
+            font-size: 34px;
+            transform: translate(-50%, -50%) scale(0);
+            animation: growBurst 1.4s var(--ease-spring) forwards;
+        }
+
+        @keyframes growBurst {
+            0%   { transform: translate(-50%,-50%) scale(0) rotate(-40deg); opacity: 0; }
+            35%  { transform: translate(-50%,-90%) scale(1.25) rotate(8deg); opacity: 1; }
+            70%  { transform: translate(-50%,-110%) scale(1.05) rotate(-4deg); opacity: .9; }
+            100% { transform: translate(-50%,-160%) scale(.85) rotate(0deg); opacity: 0; }
+        }
+
+        /* =========================
+           SIDE PANEL
+        ========================= */
+
+        .side-stack { display: flex; flex-direction: column; gap: 18px; }
+
+        .mini-card { padding: 24px; }
+
+        .mini-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 32px 80px rgba(48,72,54,.11), 0 0 30px var(--glow);
+        }
+
+        .mini-title { font-size: 14px; font-weight: 700; }
+
+        .mini-subtitle {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .week-dots {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .day { text-align: center; }
+
+        .day-dot {
+            position: relative;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #edf2eb;
+            font-size: 16px;
+            transition: transform .4s var(--ease-spring), box-shadow .3s ease, background .5s ease;
+        }
+
+        .day-dot.filled {
+            background: var(--mood-bg);
+            box-shadow: 0 6px 16px var(--glow);
+        }
+
+        /* little stem under filled dots */
+        .day-dot.filled::after {
+            content: "";
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            width: 2px;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--mood-accent);
+            transform: translateX(-50%) scaleY(0);
+            transform-origin: top;
+            animation: stemGrow .5s var(--ease-grow) .2s forwards;
+        }
+
+        .day-dot:hover {
+            transform: scale(1.22) translateY(-4px);
+            box-shadow: 0 10px 22px var(--glow);
+        }
+
+        .day-name {
+            display: block;
+            margin-top: 6px;
+            color: #9aa29d;
+            font-size: 9px;
+        }
+
+        .insight-link {
+            position: relative;
+            overflow: hidden;
+            margin-top: 22px;
+            width: 100%;
+            border: 1px solid var(--border);
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--green-dark);
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .3s var(--ease-spring), background .3s ease, box-shadow .3s ease;
+        }
+
+        .insight-link:hover {
+            transform: translateY(-3px);
+            background: #f3f8f2;
+            box-shadow: 0 10px 22px rgba(48,72,54,.08);
+        }
+
+        .insight-link .arr {
+            display: inline-block;
+            transition: transform .4s var(--ease-spring);
+        }
+
+        .insight-link:hover .arr { transform: translateX(6px); }
+
+        .privacy-card {
+            background: linear-gradient(150deg, #eef7ec, #e4f0e1);
+            border-color: #d9e8d6;
+        }
+
+        .privacy-card p {
+            margin-top: 9px;
+            color: #637267;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           HEADERS
+        ========================= */
+
+        .space-header,
+        .insights-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin-bottom: 25px;
+        }
+
+        .space-header h2,
+        .insights-header h2 {
+            font-family: "Playfair Display", serif;
+            font-size: 56px;
+            font-weight: 500;
+            letter-spacing: -1.5px;
+            animation: pageIn .6s var(--ease-smooth) both;
+        }
+
+        .space-header p,
+        .insights-header p {
+            color: var(--muted);
+            font-size: 15px;
+            margin-top: 7px;
+            animation: pageIn .6s var(--ease-smooth) .1s both;
+        }
+
+        .space-count {
+            padding: 10px 15px;
+            border-radius: 100px;
+            background: rgba(255,255,255,.72);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            color: var(--green-dark);
+            font-size: 12px;
+            font-weight: 700;
+            transition: transform .3s var(--ease-spring), box-shadow .3s ease;
+        }
+
+        .space-count:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 10px 22px var(--glow);
+        }
+
+        /* =========================
+           YOUR SPACE — a growing garden
+        ========================= */
+
+        .journal-archive {
+            position: relative;
+            display: grid;
+            gap: 16px;
+            padding-left: 26px;
+        }
+
+        /* central vine running down the archive */
+        .journal-archive::before {
+            content: "";
+            position: absolute;
+            left: 9px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            border-radius: 4px;
+            background: linear-gradient(
+                to bottom,
+                var(--mood-accent),
+                color-mix(in srgb, var(--mood-accent) 25%, transparent)
+            );
+            transform-origin: top;
+            animation: stemGrow 1.1s var(--ease-grow) both;
+            opacity: .45;
+            transition: background .9s ease;
+        }
+
+        .journal-entry {
+            position: relative;
+            padding: 26px 30px;
+            overflow: hidden;
+            animation: entryGrow .75s var(--ease-grow) both;
+        }
+
+        @keyframes entryGrow {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* leaf node connecting each entry to the vine */
+        .entry-node {
+            position: absolute;
+            left: -23px;
+            top: 30px;
+            width: 15px; height: 15px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--mood-accent);
+            transform: rotate(-45deg) scale(0);
+            animation: leafPop .6s var(--ease-spring) both;
+            box-shadow: 0 4px 12px var(--glow);
+        }
+
+        .journal-entry::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 18px; bottom: 18px;
+            width: 3px;
+            border-radius: 0 6px 6px 0;
+            background: var(--mood-accent);
+            transform: scaleY(.3);
+            opacity: .45;
+            transition: transform .55s var(--ease-spring), opacity .4s ease;
+        }
+
+        .journal-entry:hover::before { transform: scaleY(1); opacity: 1; }
+
+        .journal-entry:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 32px 85px rgba(48,72,54,.12), 0 0 34px var(--glow);
+        }
+
+        .entry-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .entry-mood {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 100px;
+            background: var(--mood-bg);
+            color: var(--mood-accent);
+            font-size: 12px;
+            font-weight: 700;
+            transition: transform .35s var(--ease-spring);
+        }
+
+        .journal-entry:hover .entry-mood { transform: scale(1.05); }
+
+        .entry-date { color: #9aa39d; font-size: 12px; }
+
+        .entry-content {
+            color: #3d4b42;
+            font-size: 16px;
+            line-height: 1.75;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .entry-number {
+            color: #a0aaa3;
+            font-size: 11px;
+            margin-top: 15px;
+        }
+
+        .empty-space {
+            text-align: center;
+            padding: 70px 25px;
+            animation: pageIn .6s var(--ease-smooth);
+        }
+
+        .empty-space .empty-icon {
+            font-size: 42px;
+            margin-bottom: 14px;
+            display: inline-block;
+            animation: bob 3.2s ease-in-out infinite;
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateY(0) rotate(-4deg); }
+            50%      { transform: translateY(-12px) rotate(5deg); }
+        }
+
+        .empty-space h3 { font-size: 18px; margin-bottom: 7px; }
+        .empty-space p  { color: var(--muted); font-size: 12px; }
+
+        /* =========================
+           INSIGHTS — plants, not bars
+        ========================= */
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .insight-card { padding: 28px; overflow: hidden; }
+
+        .insight-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 32px 80px rgba(48,72,54,.11), 0 0 30px var(--glow);
+        }
+
+        .insight-card.full { grid-column: 1 / -1; }
+
+        .big-number {
+            margin-top: 12px;
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            background: linear-gradient(120deg, var(--text), var(--mood-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: background .8s ease;
+        }
+
+        .muted { color: var(--muted); font-size: 13px; }
+
+        .mood-history {
+            display: flex;
+            align-items: end;
+            gap: 13px;
+            min-height: 185px;
+            margin-top: 28px;
+            padding-bottom: 12px;
+            position: relative;
+        }
+
+        /* soil line */
+        .mood-history::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0;
+            bottom: 0;
+            height: 3px;
+            border-radius: 10px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                color-mix(in srgb, var(--mood-accent) 35%, transparent),
+                transparent
+            );
+            transform: scaleX(0);
+            animation: soilIn .9s var(--ease-grow) .2s forwards;
+        }
+
+        @keyframes soilIn { to { transform: scaleX(1); } }
+
+        .history-item {
+            flex: 1;
+            text-align: center;
+            transition: transform .4s var(--ease-spring);
+        }
+
+        .history-item:hover { transform: translateY(-8px); }
+
+        .history-emoji {
+            font-size: 28px;
+            display: inline-block;
+            transition: transform .4s var(--ease-spring);
+            animation: sway 4.5s ease-in-out infinite;
+            transform-origin: 50% 100%;
+        }
+
+        .history-item:hover .history-emoji {
+            transform: scale(1.28) rotate(-10deg);
+        }
+
+        /* stem with leaves instead of a plain bar */
+        .history-stem {
+            position: relative;
+            width: 4px;
+            margin: 10px auto 0;
+            border-radius: 6px;
+            background: linear-gradient(
+                to top,
+                var(--mood-accent),
+                color-mix(in srgb, var(--mood-accent) 45%, transparent)
+            );
+            transform-origin: bottom;
+            animation: stemGrow .9s var(--ease-grow) both;
+            transition: background .9s ease, box-shadow .35s ease;
+        }
+
+        .history-item:hover .history-stem {
+            box-shadow: 0 0 18px var(--glow);
+        }
+
+        .history-stem .stem-leaf {
+            position: absolute;
+            width: 13px; height: 13px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--mood-accent);
+            opacity: .85;
+            transform: rotate(-45deg) scale(0);
+            animation: leafPop .55s var(--ease-spring) both;
+            transition: background .9s ease;
+        }
+
+        .history-stem .stem-leaf.left  { left: -11px; }
+        .history-stem .stem-leaf.right { right: -11px; transform: rotate(135deg) scale(0); }
+        .history-stem .stem-leaf.right { animation-name: leafPopRight; }
+
+        @keyframes leafPopRight { to { transform: rotate(135deg) scale(1); } }
+
+        .history-date {
+            display: block;
+            margin-top: 9px;
+            color: #9ba39e;
+            font-size: 9px;
+        }
+
+        .empty-insights {
+            text-align: center;
+            padding: 55px 20px;
+            color: var(--muted);
+            width: 100%;
+        }
+
+        /* =========================
+           SHARED ANIMATIONS
+        ========================= */
+
+        @keyframes navIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pop {
+            0%   { transform: scale(.9); }
+            65%  { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .pop { animation: pop .35s ease; }
+
+        /* =========================
+           TO TOP
+        ========================= */
+
+        .to-top {
+            position: fixed;
+            right: 22px;
+            bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+            z-index: 300;
+            width: 46px; height: 46px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: rgba(255,255,255,.82);
+            backdrop-filter: blur(14px);
+            color: var(--green-dark);
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(16px) scale(.85);
+            pointer-events: none;
+            box-shadow: 0 14px 32px rgba(48,72,54,.14);
+            transition: all .45s var(--ease-spring);
+        }
+
+        .to-top.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .to-top:hover {
+            transform: translateY(-5px) scale(1.1);
+            background: white;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 850px) {
+            .today-grid { grid-template-columns: 1fr; }
+            .side-stack { display: grid; grid-template-columns: 1fr 1fr; }
+            .insights-grid { grid-template-columns: 1fr; }
+            .insight-card.full { grid-column: auto; }
+        }
+
+        @media (max-width: 620px) {
+            nav, main { width: min(100% - 30px, 1180px); }
+            nav { padding: 16px 0; }
+            nav.stuck { padding: 11px 0; }
+
+            .nav-right { gap: 4px; }
+            .nav-button { padding: 8px 11px; font-size: 11px; }
+
+            main { padding-top: 35px; }
+            .hero h1 { font-size: 43px; }
+            .journal-card { padding: 20px; }
+
+            .grow-plant { width: 40px; height: 70px; right: 10px; bottom: 10px; opacity: .55; }
+
+            .mood { flex: 1; min-width: 55px; }
+
+            .save-area { flex-direction: column; align-items: stretch; }
+            .save-button { width: 100%; }
+            #message { text-align: center; }
+
+            .side-stack { display: flex; }
+
+            .space-header, .insights-header { display: block; }
+
+            .space-header h2, .insights-header h2 {
+                font-size: 40px;
+                margin-bottom: 10px;
+            }
+
+            .space-count { display: inline-block; margin-top: 10px; }
+
+            .journal-archive { padding-left: 20px; }
+            .journal-entry { padding: 20px 22px; }
+            .entry-node { left: -18px; }
+
+            .entry-top { align-items: flex-start; flex-direction: column; }
+        }
+
+
+
+/* =========================================================
+   STAR JAR — 7 DAY REWARD
+   ADDITIVE FEATURE — existing Sprout UI/behavior untouched
+========================================================= */
+.star-jar-card{margin-top:18px;padding:24px;overflow:hidden;position:relative}
+.star-jar-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+.star-count{padding:8px 12px;border-radius:100px;background:rgba(105,190,125,.08);border:1px solid rgba(145,200,155,.18);color:#a9e8b5;font-size:11px;font-weight:700;white-space:nowrap}
+.star-jar-scene{position:relative;height:170px;margin-top:8px;display:flex;justify-content:center;align-items:flex-end}
+.night-stars{position:absolute;inset:0;pointer-events:none}
+.night-stars span{position:absolute;color:rgba(190,245,200,.55);animation:starTwinkle 3s ease-in-out infinite}
+.night-stars span:nth-child(1){top:18px;left:18%}
+.night-stars span:nth-child(2){top:45px;left:72%;animation-delay:.6s}
+.night-stars span:nth-child(3){top:70px;left:29%;animation-delay:1.1s}
+.night-stars span:nth-child(4){top:30px;left:52%;animation-delay:1.7s}
+.night-stars span:nth-child(5){top:85px;left:80%;animation-delay:2.1s}
+@keyframes starTwinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:.9;transform:scale(1.2)}}
+.star-jar{position:relative;width:115px;height:125px;display:flex;justify-content:center;align-items:flex-end}
+.jar-body{position:absolute;bottom:8px;width:105px;height:100px;background:linear-gradient(135deg,rgba(190,235,200,.08),rgba(80,130,90,.04));border:1px solid rgba(145,200,155,.25);border-radius:25px 25px 31px 31px;box-shadow:inset 0 0 25px rgba(120,210,135,.05),0 0 30px rgba(80,190,100,.05);backdrop-filter:blur(10px)}
+.jar-mouth{position:absolute;top:13px;width:58px;height:15px;border:1px solid rgba(145,200,155,.3);border-radius:50%;background:rgba(10,18,12,.8);z-index:3}
+.jar-base{position:absolute;bottom:1px;width:75px;height:9px;border-radius:50%;background:rgba(130,190,140,.08)}
+.jar-shine{position:absolute;left:14px;top:18px;width:7px;height:52px;border-radius:20px;background:rgba(210,255,220,.13);transform:rotate(8deg)}
+.jar-stars{position:absolute;z-index:2;bottom:18px;width:88px;height:70px}
+.collected-star{position:absolute;color:#c9f7d1;font-size:16px;filter:drop-shadow(0 0 6px rgba(130,240,150,.65));animation:collectedStarFloat 3s ease-in-out infinite}
+@keyframes collectedStarFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
+.star-progress-text{text-align:center;margin-top:0;color:#8fa396;font-size:10px}
+.star-progress{height:4px;margin-top:8px;border-radius:10px;overflow:hidden;background:rgba(130,180,140,.08)}
+.star-progress-fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#52795f,#9be2a9);box-shadow:0 0 12px rgba(130,220,145,.35);transition:width .8s cubic-bezier(.16,1,.3,1)}
+.star-message{margin-top:11px;text-align:center;color:#718078;font-size:10px;line-height:1.5}
+.falling-star{position:fixed;z-index:99999;pointer-events:none;font-size:28px;color:#d9ffe0;filter:drop-shadow(0 0 8px rgba(130,255,150,.9)) drop-shadow(0 0 20px rgba(130,255,150,.55));animation:fallingStar 1.8s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes fallingStar{0%{opacity:0;transform:translate(0,0) rotate(-20deg) scale(.4)}12%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translate(var(--star-x),var(--star-y)) rotate(25deg) scale(1)}}
+.star-burst{position:fixed;z-index:100000;pointer-events:none;font-size:13px;color:#c9f7d1;animation:starBurst 1s ease-out forwards}
+@keyframes starBurst{0%{opacity:1;transform:scale(.4)}70%{opacity:1;transform:scale(1.5)}100%{opacity:0;transform:scale(.5)}}
+.star-jar-card.star-earned{animation:jarCelebration .8s cubic-bezier(.34,1.56,.64,1)}
+@keyframes jarCelebration{0%{transform:scale(1)}45%{transform:scale(1.025);box-shadow:0 0 35px rgba(110,220,130,.18)}100%{transform:scale(1)}}
+@media(max-width:620px){.star-jar-card{margin-top:18px}.star-jar-scene{height:155px}}
+
+        /* =========================
+           REDUCED MOTION
+        ========================= */
+
+
+
+        /* ================================
+           SPROUT — SLIM NIGHT RADIO
+           ================================ */
+        .night-radio-bar {
+            width: min(1180px, calc(100% - 48px));
+            margin: 12px auto 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 7px 11px 7px 15px;
+            border: 1px solid rgba(155, 255, 199, 0.13);
+            border-radius: 999px;
+            background: rgba(7, 15, 12, 0.82);
+            box-shadow: 0 8px 30px rgba(0,0,0,.24), inset 0 0 24px rgba(102,255,170,.025);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            position: relative;
+            z-index: 20;
+        }
+        .night-radio-dot {
+            width: 8px;
+            height: 8px;
+            flex: 0 0 8px;
+            border-radius: 50%;
+            background: #9dffc5;
+            box-shadow: 0 0 11px rgba(157,255,197,.7);
+            animation: nightRadioPulse 2.2s ease-in-out infinite;
+        }
+        .night-radio-label {
+            color: #bfffd4;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .night-radio-sep { color: rgba(191,255,212,.28); }
+        .night-radio-track {
+            min-width: 0;
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: #f0f7f2;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .night-radio-track span { color: #8fa79a; font-weight: 500; }
+        .night-radio-mood {
+            color: #789085;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .night-radio-controls { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; }
+        .night-radio-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(157,255,197,.16);
+            border-radius: 50%;
+            background: rgba(255,255,255,.035);
+            color: #d9ffe5;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            font: inherit;
+            transition: transform .18s ease, background .18s ease, border-color .18s ease;
+        }
+        .night-radio-btn:hover { transform: translateY(-1px) scale(1.04); background: rgba(157,255,197,.09); border-color: rgba(157,255,197,.35); }
+        .night-radio-btn.play { width: 36px; height: 36px; background: rgba(157,255,197,.13); border-color: rgba(157,255,197,.3); }
+        .night-radio-menu { position: relative; }
+        .night-radio-list {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 270px;
+            padding: 7px;
+            border: 1px solid rgba(157,255,197,.14);
+            border-radius: 16px;
+            background: rgba(7,12,10,.97);
+            box-shadow: 0 18px 50px rgba(0,0,0,.5);
+            display: none;
+        }
+        .night-radio-list.open { display: block; }
+        .night-radio-option { width: 100%; border: 0; border-radius: 11px; padding: 9px 10px; background: transparent; color: #dce9df; text-align: left; cursor: pointer; font: inherit; }
+        .night-radio-option:hover, .night-radio-option.active { background: rgba(157,255,197,.08); }
+        .night-radio-option strong { display: block; font-size: 12px; }
+        .night-radio-option small { color: #789085; font-size: 10px; }
+        .night-radio-frame {
+            position: fixed;
+            width: 200px !important;
+            height: 200px !important;
+            border: 0;
+            opacity: 0;
+            pointer-events: none;
+            left: -220px;
+            bottom: 0;
+            z-index: -1;
+        }
+        @keyframes nightRadioPulse { 0%,100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.12); } }
+        @media (max-width: 720px) {
+            .night-radio-bar { width: calc(100% - 24px); gap: 8px; }
+            .night-radio-label, .night-radio-sep, .night-radio-mood { display: none; }
+            .night-radio-track { font-size: 12px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .reveal { opacity: 1 !important; transform: none !important; }
+        }
+    
+/* =========================================================
+   SPROUT BLACK NIGHT
+   ADDITIVE / ISOLATED LAYER
+   Existing mood-accent behavior remains untouched.
+========================================================= */
+
+:root {
+    --bg: #000000;
+    --card: rgba(8, 10, 10, .82);
+    --text: #e7eee9;
+    --muted: #89968e;
+    --border: rgba(145, 170, 154, .15);
+    --glow: rgba(105, 190, 125, .12);
+}
+
+body {
+    background: #000000;
+}
+
+/* Existing components keep their original layout and behavior. */
+.card {
+    background: var(--card);
+    border-color: var(--border);
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.58),
+        0 5px 20px rgba(0,0,0,.38);
+}
+
+.mood {
+    background: rgba(7, 10, 9, .78);
+    border-color: var(--border);
+}
+
+.chip {
+    background: rgba(7, 10, 9, .78);
+    border-color: var(--border);
+}
+
+textarea {
+    background: linear-gradient(
+        160deg,
+        rgba(16, 25, 21, .98) 0%,
+        rgba(9, 12, 12, .99) 52%,
+        rgba(15, 12, 20, .98) 100%
+    );
+}
+
+/* Keep the journal dark while focused — no white flash. */
+textarea:focus {
+    background: linear-gradient(
+        160deg,
+        rgba(18, 30, 24, .99) 0%,
+        rgba(10, 14, 14, .99) 52%,
+        rgba(17, 14, 23, .99) 100%
+    );
+}
+
+.to-top {
+    background: rgba(7, 10, 9, .90);
+    border-color: var(--border);
+}
+
+.night-sky {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.night-sky > * {
+    pointer-events: none;
+}
+
+/* Keep actual app content above the atmosphere.
+   This does not change layout; it only establishes a paint layer. */
+main {
+    position: relative;
+    z-index: 2;
+}
+
+/* The original nav is already sticky/z-index:100. */
+.vine-rail,
+.scroll-progress,
+.to-top,
+nav {
+    z-index: 3;
+}
+
+.scroll-progress {
+    z-index: 500;
+}
+
+.night-sky::before {
+    content: "";
+    position: absolute;
+    inset: -15%;
+    background:
+        radial-gradient(circle at 12% 16%, rgba(70, 180, 115, .055), transparent 24%),
+        radial-gradient(circle at 88% 22%, rgba(100, 90, 210, .035), transparent 25%),
+        radial-gradient(circle at 50% 90%, rgba(70, 140, 220, .025), transparent 28%);
+    animation: nightMist 18s ease-in-out infinite alternate;
+}
+
+@keyframes nightMist {
+    from { transform: scale(1); opacity: .65; }
+    to { transform: scale(1.05) translate3d(1%, 1%, 0); opacity: 1; }
+}
+
+/* MOON */
+.night-moon-halo {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    right: 6%;
+    top: 6%;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(220, 245, 225, .075),
+        rgba(170, 210, 180, .025) 35%,
+        transparent 70%
+    );
+    animation: moonHalo 7s ease-in-out infinite;
+}
+
+.night-moon {
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    right: calc(6% + 90px);
+    top: calc(6% + 65px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 32%, #fffef3, #dcebdc 62%, #9bb49e);
+    box-shadow:
+        0 0 20px rgba(235, 250, 238, .28),
+        0 0 60px rgba(170, 215, 180, .12);
+    opacity: .72;
+    animation: moonFloat 9s ease-in-out infinite;
+}
+
+.night-moon::after {
+    content: "";
+    position: absolute;
+    width: 62px;
+    height: 62px;
+    right: -10px;
+    top: -7px;
+    border-radius: 50%;
+    background: #000;
+}
+
+.moon-crater {
+    position: absolute;
+    z-index: 2;
+    border-radius: 50%;
+    background: rgba(80, 105, 85, .17);
+}
+
+.moon-crater-a { width: 12px; height: 8px; left: 18px; top: 20px; }
+.moon-crater-b { width: 7px; height: 7px; left: 34px; top: 42px; }
+.moon-crater-c { width: 5px; height: 5px; left: 16px; top: 48px; }
+
+@keyframes moonFloat {
+    0%,100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes moonHalo {
+    0%,100% { transform: scale(.96); opacity: .55; }
+    50% { transform: scale(1.06); opacity: .9; }
+}
+
+/* STARS */
+#starField,
+#fireflyField,
+#seedField,
+#dustField {
+    position: absolute;
+    inset: 0;
+}
+
+.night-star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fffef0;
+    box-shadow: 0 0 6px rgba(255,255,235,.75), 0 0 15px rgba(180,235,195,.25);
+    animation: twinkle var(--twinkle) ease-in-out infinite;
+    animation-delay: var(--delay);
+}
+
+.night-star.cross::before,
+.night-star.cross::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(245,255,242,.72);
+    border-radius: 50%;
+}
+
+.night-star.cross::before { width: 1px; height: 15px; }
+.night-star.cross::after  { width: 15px; height: 1px; }
+
+@keyframes twinkle {
+    0%,100% { opacity: var(--opacity); transform: scale(.7); }
+    50% { opacity: 1; transform: scale(1.35); }
+}
+
+/* FIREFLIES */
+.night-firefly {
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: #dfff9e;
+    box-shadow:
+        0 0 6px #dfff9e,
+        0 0 18px rgba(185,255,125,.72),
+        0 0 35px rgba(135,235,115,.30);
+    animation:
+        fireflyMove var(--duration) ease-in-out infinite,
+        fireflyBlink var(--blink) ease-in-out infinite;
+    animation-delay: var(--delay);
+}
+
+@keyframes fireflyMove {
+    0% { transform: translate(0, 20px); }
+    25% { transform: translate(35px, -18px); }
+    50% { transform: translate(-25px, -55px); }
+    75% { transform: translate(-50px, -10px); }
+    100% { transform: translate(0, 20px); }
+}
+
+@keyframes fireflyBlink {
+    0%,100% { opacity: 0; }
+    35% { opacity: .9; }
+    55% { opacity: .2; }
+    72% { opacity: 1; }
+}
+
+/* FLOATING LIGHT SEEDS */
+.night-seed {
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50% 50% 50% 0;
+    background: color-mix(in srgb, var(--mood-accent) 75%, white);
+    box-shadow: 0 0 12px var(--glow), 0 0 25px var(--glow);
+    transform: rotate(-45deg);
+    animation: seedFloat var(--duration) ease-in-out infinite;
+    animation-delay: var(--delay);
+}
+
+@keyframes seedFloat {
+    0%   { transform: translateY(108vh) rotate(-45deg) scale(.3); opacity: 0; }
+    15%  { opacity: .5; }
+    50%  { transform: translate(45px, 45vh) rotate(65deg) scale(1); opacity: .75; }
+    80%  { transform: translate(-35px, 10vh) rotate(150deg) scale(.7); opacity: .4; }
+    100% { transform: translate(60px, -12vh) rotate(240deg) scale(.2); opacity: 0; }
+}
+
+/* DUST */
+.night-dust {
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: rgba(220,240,225,.55);
+    animation: dustFloat var(--duration) linear infinite;
+    animation-delay: var(--delay);
+}
+
+@keyframes dustFloat {
+    0% { transform: translate(0, 110vh); opacity: 0; }
+    15% { opacity: .15; }
+    50% { transform: translate(var(--drift), 48vh); opacity: .32; }
+    85% { opacity: .12; }
+    100% { transform: translate(calc(var(--drift) * -1), -10vh); opacity: 0; }
+}
+
+/* CONSTELLATIONS */
+.night-constellation {
+    position: absolute;
+    width: 125px;
+    height: 85px;
+    opacity: .16;
+}
+
+.night-constellation::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 8% 60%, #eaffef 0 2px, transparent 3px),
+        radial-gradient(circle at 30% 20%, #eaffef 0 2px, transparent 3px),
+        radial-gradient(circle at 58% 72%, #eaffef 0 1.5px, transparent 3px),
+        radial-gradient(circle at 82% 34%, #eaffef 0 2px, transparent 3px);
+}
+
+.constellation-a { left: 12%; top: 17%; transform: rotate(-8deg); }
+.constellation-b { right: 19%; top: 39%; transform: rotate(15deg) scale(.75); opacity: .10; }
+
+/* SHOOTING STARS */
+.night-shooting-star {
+    position: absolute;
+    left: -180px;
+    top: 14%;
+    width: 145px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgba(220,255,225,.12), white);
+    filter: drop-shadow(0 0 7px rgba(200,255,215,.75));
+    transform: rotate(24deg);
+    animation: shooting 16s linear infinite;
+    animation-delay: 4s;
+    opacity: 0;
+}
+
+.night-shooting-star::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 10px #eaffef, 0 0 20px rgba(170,255,195,.8);
+}
+
+.shooting-two {
+    top: 50%;
+    width: 105px;
+    animation-delay: 12s;
+    animation-duration: 20s;
+    transform: rotate(18deg);
+}
+
+@keyframes shooting {
+    0%,76% { opacity: 0; transform: translate(0,0) rotate(24deg); }
+    79% { opacity: 1; }
+    86% { opacity: 1; }
+    92% { opacity: 0; transform: translate(125vw,55vh) rotate(24deg); }
+    100% { opacity: 0; transform: translate(125vw,55vh) rotate(24deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .night-star,
+    .night-firefly,
+    .night-seed,
+    .night-dust,
+    .night-moon,
+    .night-moon-halo,
+    .night-sky::before,
+    .night-shooting-star {
+        animation: none !important;
+    }
+}
+
+/* =========================================================
+   FIXES FOR NIGHT MODE UI ELEMENTS & TEXT READABILITY
+========================================================= */
+
+/* Nav bar overrides */
+nav::before {
+    background: rgba(4, 5, 5, 0.85);
+}
+.nav-right {
+    background: rgba(20, 25, 22, 0.6);
+    border-color: var(--border);
+}
+.nav-button {
+    color: var(--muted);
+}
+.nav-button:hover, .nav-button.active {
+    color: var(--text);
+}
+.brand-icon {
+    background: linear-gradient(140deg, #111a14, #080c09);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+}
+
+/* Fix emoji gradient clipping */
+#latestMood {
+    background: transparent;
+    -webkit-text-fill-color: initial;
+    color: inherit;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.15));
+}
+
+/* Fix journal entry text color for dark mode readability */
+.entry-content {
+    color: #d1ded6;
+}
+.entry-date {
+    color: #92a499;
+}
+.entry-number {
+    color: #809187;
+}
+
+
+
+
+
+
+/* =========================================================
+   ABOUT VIEW — compact, simple, no extra functionality
+========================================================= */
+
+.about-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 25px;
+}
+
+.about-header h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 56px;
+    font-weight: 500;
+    letter-spacing: -1.5px;
+    animation: pageIn .6s var(--ease-smooth) both;
+}
+
+.about-header p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 7px;
+    max-width: 560px;
+    line-height: 1.6;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1.35fr .9fr;
+    gap: 18px;
+}
+
+.about-card {
+    padding: 28px;
+    overflow: hidden;
+}
+
+.about-card.full {
+    grid-column: 1 / -1;
+}
+
+.about-card h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.about-card p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.75;
+}
+
+.about-principles {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.about-principle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #718077;
+    font-size: 11px;
+}
+
+.about-principle span:first-child {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(105,155,115,.09);
+    border: 1px solid rgba(105,155,115,.13);
+}
+
+.about-developers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 15px;
+}
+
+.about-developer {
+    padding: 9px 13px;
+    border-radius: 100px;
+    border: 1px solid rgba(105,155,115,.13);
+    background: rgba(105,155,115,.06);
+    color: #91a497;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.about-tagline {
+    margin-top: 18px;
+    color: var(--mood-accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+@media (max-width: 850px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .about-card.full { grid-column: auto; }
+}
+
+@media (max-width: 620px) {
+    .about-header { display: block; }
+    .about-header h2 { font-size: 40px; margin-bottom: 10px; }
+    .about-card { padding: 22px 20px; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<div class="ambient" id="ambient">
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+    <div class="orb mood"></div>
+</div>
+
+<div class="night-sky" id="nightSky" aria-hidden="true">
+    <div class="night-moon-halo"></div>
+    <div class="night-moon">
+        <span class="moon-crater moon-crater-a"></span>
+        <span class="moon-crater moon-crater-b"></span>
+        <span class="moon-crater moon-crater-c"></span>
+    </div>
+    <div id="starField"></div>
+    <div id="fireflyField"></div>
+    <div id="seedField"></div>
+    <div id="dustField"></div>
+    <div class="night-constellation constellation-a"></div>
+    <div class="night-constellation constellation-b"></div>
+    <div class="night-shooting-star shooting-one"></div>
+    <div class="night-shooting-star shooting-two"></div>
+</div>
+
+
+<!-- GROWING VINE ALONG THE LEFT EDGE -->
+
+<div class="vine-rail" aria-hidden="true">
+    <svg viewBox="0 0 54 800" preserveAspectRatio="none">
+        <path
+            id="vinePath"
+            class="vine-path"
+            d="M14 800 C 30 700, 4 620, 20 540 C 36 460, 6 380, 22 300 C 38 220, 10 140, 24 40"
+        />
+
+        <path class="vine-leaf" data-at="0.14" d="M20 700 c 14 -10, 26 -4, 26 -4 s -10 14, -24 12 -2 -8 -2 -8z"/>
+        <path class="vine-leaf" data-at="0.30" d="M14 590 c -12 -10, -24 -4, -24 -4 s 10 14, 22 12 2 -8 2 -8z" transform="translate(18,0)"/>
+        <path class="vine-leaf" data-at="0.46" d="M22 470 c 14 -10, 26 -4, 26 -4 s -10 14, -24 12 -2 -8 -2 -8z"/>
+        <path class="vine-leaf" data-at="0.62" d="M16 350 c -12 -10, -24 -4, -24 -4 s 10 14, 22 12 2 -8 2 -8z" transform="translate(18,0)"/>
+        <path class="vine-leaf" data-at="0.78" d="M24 230 c 14 -10, 26 -4, 26 -4 s -10 14, -24 12 -2 -8 -2 -8z"/>
+        <path class="vine-leaf" data-at="0.92" d="M18 110 c -12 -10, -24 -4, -24 -4 s 10 14, 22 12 2 -8 2 -8z" transform="translate(18,0)"/>
+    </svg>
+</div>
+
+
+<!-- =========================
+     NAVIGATION
+========================= -->
+
+<nav id="mainNav">
+
+    <div class="brand" onclick="showView('today')">
+        <div class="brand-icon"><span>🌱</span></div>
+        <div class="brand-name">Sprout</div>
+    </div>
+
+    <div class="nav-right">
+
+        <span class="nav-indicator" id="navIndicator"></span>
+
+        <button id="todayNav" class="nav-button active" onclick="showView('today')">
+            Today
+        </button>
+
+        <button id="insightsNav" class="nav-button" onclick="showView('insights')">
+            My Insights
+        </button>
+
+        <button id="spaceNav" class="nav-button" onclick="showView('space')">
+            🔒 Your Space
+        </button>
+
+        <button id="aboutNav" class="nav-button" onclick="showView('about')">
+            About
+        </button>
+
+    </div>
+
+</nav>
+
+
+
+    <!-- Compact one-line Night Radio -->
+    <section class="night-radio-bar" id="nightRadioBar" aria-label="Sprout Night Radio">
+        <span class="night-radio-dot" aria-hidden="true"></span>
+        <span class="night-radio-label">Night Radio</span>
+        <span class="night-radio-sep">·</span>
+        <div class="night-radio-track" id="nightRadioTrack">Night Radio <span>— now playing</span></div>
+        <span class="night-radio-mood" id="nightRadioMood">midnight · calm · feel good</span>
+        <div class="night-radio-controls">
+            <button class="night-radio-btn" id="nightRadioPause" type="button" aria-label="Pause music">❚❚</button>
+            <button class="night-radio-btn" id="nightRadioMute" type="button" aria-label="Unmute music">🔇</button>
+        </div>
+    </section>
+    <iframe
+        class="night-radio-frame"
+        id="nightRadioFrame"
+        title="Night Radio music player"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen>
+    </iframe>
+
+<main>
+
+    <!-- =========================
+         TODAY
+    ========================= -->
+
+    <section id="todayView" class="view active">
+
+        <div class="hero">
+
+            <div class="eyebrow">
+                <span class="seed"></span>
+                A little space for you
+            </div>
+
+            <h1 id="heroHeading">
+                <span class="word">How</span>
+                <span class="word">are</span>
+                <span class="word">you</span>
+                <span class="word">feeling</span>
+                <span class="word accent">right</span>
+                <span class="word accent">now?</span>
+            </h1>
+
+            <p>
+                No pressure. No perfect words.
+                Just take a moment and check in with yourself.
+            </p>
+
+        </div>
+
+
+        <div class="today-grid">
+
+            <!-- JOURNAL -->
+
+            <div class="card journal-card reveal" id="journalCard">
+
+                <span class="corner-sprout">🌿</span>
+
+                <div class="section-label">
+                    How's the vibe?
+                </div>
+
+                <div class="moods">
+
+                    <button class="mood" data-mood="great">
+                        <span class="sprout-top">🌿</span>
+                        <span class="mood-emoji">🤩</span>
+                        <span class="mood-name">Great</span>
+                    </button>
+
+                    <button class="mood" data-mood="good">
+                        <span class="sprout-top">🌿</span>
+                        <span class="mood-emoji">😊</span>
+                        <span class="mood-name">Good</span>
+                    </button>
+
+                    <button class="mood" data-mood="okay">
+                        <span class="sprout-top">🌿</span>
+                        <span class="mood-emoji">😌</span>
+                        <span class="mood-name">Okay</span>
+                    </button>
+
+                    <button class="mood" data-mood="low">
+                        <span class="sprout-top">🌿</span>
+                        <span class="mood-emoji">😔</span>
+                        <span class="mood-name">Low</span>
+                    </button>
+
+                    <button class="mood" data-mood="difficult">
+                        <span class="sprout-top">🌿</span>
+                        <span class="mood-emoji">😣</span>
+                        <span class="mood-name">Difficult</span>
+                    </button>
+
+                </div>
+
+
+                <div class="section-label">
+                    What's on your mind?
+                </div>
+
+                <div class="journal-wrap">
+
+                    <textarea
+                        id="journal"
+                        placeholder="Write it messy. Write it honestly. This is your space..."
+                    ></textarea>
+
+                    <!-- the plant that grows while you write -->
+                    <svg class="grow-plant" viewBox="0 0 54 92" aria-hidden="true">
+                        <path
+                            id="plantStem"
+                            class="plant-stem"
+                            d="M27 90 C 27 70, 20 58, 27 44 C 33 30, 24 20, 27 8"
+                        />
+
+                        <path class="plant-leaf" id="leafA"
+                              d="M27 72 c -13 -9, -22 -3, -22 -3 s 8 13, 20 11 2 -8 2 -8z"/>
+
+                        <path class="plant-leaf" id="leafB"
+                              d="M25 54 c 13 -9, 22 -3, 22 -3 s -8 13, -20 11 -2 -8 -2 -8z"/>
+
+                        <path class="plant-leaf" id="leafC"
+                              d="M28 34 c -13 -9, -22 -3, -22 -3 s 8 13, 20 11 2 -8 2 -8z"/>
+
+                        <circle class="plant-bloom" id="bloom" cx="27" cy="8" r="6"/>
+                    </svg>
+
+                </div>
+
+                <div class="typing-row">
+
+                    <span class="growth-stage" id="growthStage">
+                        <span class="stage-icon">🌰</span>
+                        <span class="stage-text">Seed</span>
+                    </span>
+
+                    <div class="depth-track">
+                        <div class="depth-fill" id="depthFill"></div>
+                    </div>
+
+                    <span id="characterCount">0 characters</span>
+
+                </div>
+
+
+                <div class="optional">
+
+                    <div class="optional-title">
+                        What affected your day?
+                        <span>optional</span>
+                    </div>
+
+                    <div class="chips">
+                        <button class="chip">📚 College</button>
+                        <button class="chip">👥 Friends</button>
+                        <button class="chip">🏠 Family</button>
+                        <button class="chip">💼 Work</button>
+                        <button class="chip">❤️ Relationships</button>
+                        <button class="chip">💰 Money</button>
+                        <button class="chip">🌱 Personal</button>
+                        <button class="chip">✨ Something else</button>
+                    </div>
+
+                </div>
+
+
+                <div class="optional">
+
+                    <div class="optional-title">
+                        What would feel helpful right now?
+                        <span>optional</span>
+                    </div>
+
+                    <div class="chips">
+                        <button class="chip">🌿 Some quiet</button>
+                        <button class="chip">💬 Someone to talk to</button>
+                        <button class="chip">🎯 Motivation</button>
+                        <button class="chip">🧘 Time to relax</button>
+                        <button class="chip">🤝 Support</button>
+                        <button class="chip">✍️ Just writing</button>
+                    </div>
+
+                </div>
+
+
+                <div class="save-area">
+
+                    <div class="privacy">
+                        🔒 Your journal is encrypted and stays private.
+                        Sprout only sends limited wellbeing signals for
+                        authorized support when configured thresholds are met.
+                    </div>
+
+                    <button id="saveButton" class="save-button" onclick="saveJournal()">
+                        Plant this reflection 🌱
+                    </button>
+
+                </div>
+
+                <div id="message"></div>
+
+            </div>
+
+
+            <!-- SIDE -->
+
+            <div class="side-stack">
+
+                <div class="card mini-card reveal">
+
+                    <span class="corner-sprout">🍃</span>
+
+                    <div class="mini-title">✨ Your recent vibe</div>
+                    <div class="mini-subtitle">Your latest check-ins</div>
+
+                    <div id="weekDots" class="week-dots">
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">M</span></div>
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">T</span></div>
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">W</span></div>
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">T</span></div>
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">F</span></div>
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">S</span></div>
+                        <div class="day"><div class="day-dot">—</div><span class="day-name">S</span></div>
+                    </div>
+
+                    <button class="insight-link" onclick="showView('insights')">
+                        Open My Insights <span class="arr">→</span>
+                    </button>
+
+                </div>
+
+
+
+
+                <div class="card mini-card star-jar-card reveal" id="starJarCard">
+
+                    <span class="corner-sprout">✦</span>
+
+                    <div class="star-jar-header">
+                        <div>
+                            <div class="mini-title">🌙 Your Star Jar</div>
+                            <div class="mini-subtitle">Keep showing up for yourself.</div>
+                        </div>
+                        <div class="star-count" id="starCount">0 ⭐</div>
+                    </div>
+
+                    <div class="star-jar-scene">
+                        <div class="night-stars" aria-hidden="true">
+                            <span>✦</span><span>·</span><span>✧</span><span>·</span><span>✦</span>
+                        </div>
+
+                        <div class="star-jar" id="starJar">
+                            <div class="jar-stars" id="jarStars"></div>
+                            <div class="jar-mouth"></div>
+                            <div class="jar-body"><div class="jar-shine"></div></div>
+                            <div class="jar-base"></div>
+                        </div>
+                    </div>
+
+                    <div class="star-progress-text" id="starProgressText">0 / 7 days</div>
+
+                    <div class="star-progress">
+                        <div class="star-progress-fill" id="starProgressFill"></div>
+                    </div>
+
+                    <p class="star-message" id="starMessage">
+                        Seven days of showing up for yourself = one falling star.
+                    </p>
+
+                </div>
+
+                <div class="card mini-card privacy-card reveal">
+
+                    <span class="corner-sprout">🌱</span>
+
+                    <div class="mini-title">🔐 Your privacy matters</div>
+
+                    <p>
+                        Your journal is encrypted before it is stored.
+                        Counselor-facing alerts contain signals and
+                        limited metadata, not your raw journal text.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         YOUR SPACE
+    ========================= -->
+
+    <section id="spaceView" class="view">
+
+        <div class="space-header">
+
+            <div>
+                <h2>Your Space 🔒</h2>
+                <p>Your private journal. Your words, your history, your space.</p>
+            </div>
+
+            <div id="spaceCount" class="space-count">0 reflections</div>
+
+        </div>
+
+        <div id="journalArchive" class="journal-archive">
+
+            <div class="card empty-space">
+                <div class="empty-icon">🌱</div>
+                <h3>Your space is still growing</h3>
+                <p>Save your first reflection and it will appear here.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         INSIGHTS
+    ========================= -->
+
+    <section id="insightsView" class="view">
+
+        <div class="insights-header">
+            <div>
+                <h2>My Insights 🌱</h2>
+                <p>A gentle look at your own reflection history.</p>
+            </div>
+        </div>
+
+
+        <div class="insights-grid">
+
+            <div class="card insight-card">
+                <span class="corner-sprout">🌿</span>
+                <div class="mini-title">Reflections</div>
+                <div id="reflectionCount" class="big-number">0</div>
+                <div class="muted">saved check-ins</div>
+            </div>
+
+
+            <div class="card insight-card">
+                <span class="corner-sprout">🍃</span>
+                <div class="mini-title">Most recent mood</div>
+                <div id="latestMood" class="big-number">—</div>
+                <div class="muted">based on your latest check-in</div>
+            </div>
+
+
+            <div class="card insight-card full">
+                <span class="corner-sprout">🌱</span>
+                <div class="mini-title">Your garden of check-ins</div>
+
+                <div id="moodHistory" class="mood-history">
+                    <div class="empty-insights">
+                        Start checking in to build your history.
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card insight-card full">
+                <span class="corner-sprout">🌿</span>
+                <div class="mini-title">A little note</div>
+
+                <p id="insightMessage" class="muted" style="margin-top:12px; line-height:1.7;">
+                    Your insights will grow as you keep checking in.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+
+
+
+<!-- =========================
+     ABOUT
+========================= -->
+
+<section id="aboutView" class="view">
+
+    <div class="about-header">
+        <div>
+            <h2>About Sprout 🌱</h2>
+            <p>
+                A private little space designed to help students reflect,
+                notice their wellbeing, and stay connected to human support.
+            </p>
+        </div>
+    </div>
+
+    <div class="about-grid">
+
+        <div class="card about-card">
+            <span class="corner-sprout">🌿</span>
+            <h3>Why Sprout?</h3>
+            <p>
+                Sprout is built around a simple idea: students should be able
+                to express themselves honestly without feeling watched.
+            </p>
+
+            <div class="about-principles">
+                <div class="about-principle">
+                    <span>🔒</span>
+                    <div><strong>Privacy first</strong><br>Personal reflections stay personal.</div>
+                </div>
+
+                <div class="about-principle">
+                    <span>🌱</span>
+                    <div><strong>Gentle reflection</strong><br>Small check-ins can build awareness over time.</div>
+                </div>
+
+                <div class="about-principle">
+                    <span>🤝</span>
+                    <div><strong>Human support</strong><br>Signals are meant to support human review, not replace it.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card about-card">
+            <span class="corner-sprout">✦</span>
+            <h3>Built by</h3>
+            <p>
+                Made as a student-focused project with the goal of making
+                wellbeing support feel safer, simpler, and more approachable.
+            </p>
+
+            <div class="about-developers">
+                <span class="about-developer">Uday Jirwankar</span>
+                <span class="about-developer">Shantanu Sable</span>
+            </div>
+
+            <div class="about-tagline">
+                Private words. Minimal signal. Human support.
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<button class="to-top" id="toTop" aria-label="Back to top"
+        onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    ↑
+</button>
+
+
+<script>
+
+    /* =========================
+       STATE
+    ========================= */
+
+    let selectedMood = "";
+
+    const reduceMotion =
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+
+    const moodInfo = {
+
+        great: {
+            color: "#4f8060",
+            bg: "#e5f2e4",
+            glow: "rgba(90,145,101,.15)",
+            emoji: "🤩"
+        },
+
+        good: {
+            color: "#5c8466",
+            bg: "#e8f3e7",
+            glow: "rgba(91,137,101,.14)",
+            emoji: "😊"
+        },
+
+        okay: {
+            color: "#74678d",
+            bg: "#eeeaf6",
+            glow: "rgba(119,102,150,.13)",
+            emoji: "😌"
+        },
+
+        low: {
+            color: "#637c8d",
+            bg: "#e8eff3",
+            glow: "rgba(92,124,145,.14)",
+            emoji: "😔"
+        },
+
+        difficult: {
+            color: "#96705e",
+            bg: "#f5e9e2",
+            glow: "rgba(150,112,94,.14)",
+            emoji: "😣"
+        }
+
+    };
+
+
+    /* growth stages as you write */
+    const growthStages = [
+        { min: 0,   icon: "🌰", text: "Seed" },
+        { min: 1,   icon: "🌱", text: "Sprouting" },
+        { min: 60,  icon: "🪴", text: "Growing" },
+        { min: 180, icon: "🌿", text: "Leafing out" },
+        { min: 360, icon: "🌳", text: "Full bloom" }
+    ];
+
+    let currentStage = -1;
+
+
+    /* =========================
+       HERO WORD STAGGER
+    ========================= */
+
+    document.querySelectorAll("#heroHeading .word")
+        .forEach((word, index) => {
+            word.style.animationDelay = (0.12 + index * 0.07) + "s";
+        });
+
+
+    /* =========================
+       AMBIENT GARDEN
+    ========================= */
+
+    (function growGarden() {
+
+        if (reduceMotion) return;
+
+        const ambient =
+            document.getElementById("ambient");
+
+
+        const glyphs = ["🍃", "🌿", "🍀"];
+
+        for (let i = 0; i < 8; i++) {
+
+            const leaf = document.createElement("div");
+
+            leaf.className = "leaf";
+            leaf.textContent = glyphs[i % glyphs.length];
+
+            leaf.style.left = (4 + Math.random() * 92) + "%";
+            leaf.style.fontSize = (11 + Math.random() * 10) + "px";
+            leaf.style.animationDuration = (17 + Math.random() * 16) + "s";
+            leaf.style.animationDelay = (Math.random() * 20) + "s";
+
+            ambient.appendChild(leaf);
+        }
+
+
+        for (let i = 0; i < 16; i++) {
+
+            const spore = document.createElement("div");
+            const size = 3 + Math.random() * 5;
+
+            spore.className = "spore";
+
+            spore.style.width = spore.style.height = size + "px";
+            spore.style.left = (Math.random() * 100) + "%";
+            spore.style.animationDuration = (20 + Math.random() * 20) + "s";
+            spore.style.animationDelay = (Math.random() * 24) + "s";
+
+            ambient.appendChild(spore);
+        }
+
+    })();
+
+
+    /* =========================
+       SIDE VINE — grows with scroll
+    ========================= */
+
+    const vinePath =
+        document.getElementById("vinePath");
+
+    const vineLeaves =
+        document.querySelectorAll(".vine-leaf");
+
+    let vineLength = 0;
+
+
+    if (vinePath) {
+
+        vineLength = vinePath.getTotalLength();
+
+        vinePath.style.strokeDasharray = vineLength;
+        vinePath.style.strokeDashoffset = vineLength;
+    }
+
+
+    function updateVine(progress) {
+
+        if (!vinePath) return;
+
+        vinePath.style.strokeDashoffset =
+            vineLength * (1 - Math.max(progress, 0.05));
+
+
+        vineLeaves.forEach(leaf => {
+
+            const at =
+                parseFloat(leaf.dataset.at);
+
+            leaf.classList.toggle("open", progress >= at);
+        });
+    }
+
+
+    /* =========================
+       NAV INDICATOR
+    ========================= */
+
+    function moveIndicator(button) {
+
+        const indicator =
+            document.getElementById("navIndicator");
+
+        const parentBox =
+            button.parentElement.getBoundingClientRect();
+
+        const box =
+            button.getBoundingClientRect();
+
+
+        indicator.style.left = (box.left - parentBox.left) + "px";
+        indicator.style.width = box.width + "px";
+    }
+
+
+    window.addEventListener("load", () => {
+        moveIndicator(document.querySelector(".nav-button.active"));
+    });
+
+    window.addEventListener("resize", () => {
+        moveIndicator(document.querySelector(".nav-button.active"));
+    });
+
+
+    /* =========================
+       SCROLL
+    ========================= */
+
+    window.addEventListener("scroll", () => {
+
+        const scrolled = window.scrollY;
+
+        document.getElementById("mainNav")
+            .classList.toggle("stuck", scrolled > 12);
+
+
+        const height =
+            document.documentElement.scrollHeight - window.innerHeight;
+
+        const progress =
+            height > 0 ? scrolled / height : 0;
+
+
+        document.getElementById("scrollProgress")
+            .style.width = (progress * 100) + "%";
+
+
+        updateVine(progress);
+
+
+        document.getElementById("toTop")
+            .classList.toggle("show", scrolled > 380);
+
+    }, { passive: true });
+
+
+    updateVine(0);
+
+
+    /* =========================
+       SCROLL REVEAL
+    ========================= */
+
+    const revealObserver =
+        new IntersectionObserver(entries => {
+
+            entries.forEach(entry => {
+
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("shown");
+                    revealObserver.unobserve(entry.target);
+                }
+
+            });
+
+        }, { threshold: 0.08 });
+
+
+    function observeReveals() {
+
+        document.querySelectorAll(".reveal:not(.shown)")
+            .forEach(element => revealObserver.observe(element));
+    }
+
+    observeReveals();
+
+
+    /* =========================
+       RIPPLE
+    ========================= */
+
+    function addRipple(event, element) {
+
+        if (reduceMotion) return;
+
+        const circle = document.createElement("span");
+        const box = element.getBoundingClientRect();
+        const size = Math.max(box.width, box.height);
+
+        circle.className = "ripple";
+
+        circle.style.width = circle.style.height = size + "px";
+        circle.style.left = (event.clientX - box.left - size / 2) + "px";
+        circle.style.top = (event.clientY - box.top - size / 2) + "px";
+
+        element.appendChild(circle);
+
+        setTimeout(() => circle.remove(), 720);
+    }
+
+
+    /* =========================
+       MOOD SELECTION
+    ========================= */
+
+    document.querySelectorAll(".mood").forEach(button => {
+
+        button.addEventListener("click", event => {
+
+            addRipple(event, button);
+
+
+            document.querySelectorAll(".mood")
+                .forEach(item => item.classList.remove("selected"));
+
+
+            button.classList.add("selected", "pop");
+
+            selectedMood = button.dataset.mood;
+
+            const info = moodInfo[selectedMood];
+
+
+            document.documentElement.style
+                .setProperty("--mood-accent", info.color);
+
+            document.documentElement.style
+                .setProperty("--mood-bg", info.bg);
+
+            document.documentElement.style
+                .setProperty("--glow", info.glow);
+
+
+            leafPuff(button);
+
+
+            setTimeout(() => button.classList.remove("pop"), 350);
+
+        });
+
+    });
+
+
+    /* small leaf puff from an element */
+    function leafPuff(element) {
+
+        if (reduceMotion) return;
+
+        const box = element.getBoundingClientRect();
+        const glyphs = ["🍃", "🌿"];
+
+        for (let i = 0; i < 5; i++) {
+
+            const leaf = document.createElement("div");
+
+            leaf.className = "sparkle";
+            leaf.textContent = glyphs[i % glyphs.length];
+
+            leaf.style.left = (box.left + box.width / 2) + "px";
+            leaf.style.top = (box.top + 8) + "px";
+
+            leaf.style.setProperty("--dx", (Math.random() * 90 - 45) + "px");
+            leaf.style.setProperty("--dy", (-40 - Math.random() * 45) + "px");
+            leaf.style.setProperty("--rot", (Math.random() * 300 - 150) + "deg");
+
+            leaf.style.animationDelay = (Math.random() * 0.12) + "s";
+
+            document.body.appendChild(leaf);
+
+            setTimeout(() => leaf.remove(), 1500);
+        }
+    }
+
+
+    /* =========================
+       CHIPS
+    ========================= */
+
+    document.querySelectorAll(".chip").forEach(chip => {
+
+        chip.addEventListener("click", event => {
+
+            addRipple(event, chip);
+
+            chip.classList.toggle("selected");
+
+            if (chip.classList.contains("selected")) {
+                leafPuff(chip);
+            }
+
+        });
+
+    });
+
+
+    /* =========================
+       WRITING → GROWING PLANT
+    ========================= */
+
+    const journal =
+        document.getElementById("journal");
+
+    const journalCard =
+        document.getElementById("journalCard");
+
+    const characterCount =
+        document.getElementById("characterCount");
+
+    const depthFill =
+        document.getElementById("depthFill");
+
+    const growthStage =
+        document.getElementById("growthStage");
+
+
+    const plantStem =
+        document.getElementById("plantStem");
+
+    const stemLength =
+        plantStem ? plantStem.getTotalLength() : 0;
+
+
+    if (plantStem) {
+        plantStem.style.strokeDasharray = stemLength;
+        plantStem.style.strokeDashoffset = stemLength;
+    }
+
+
+    const leafA = document.getElementById("leafA");
+    const leafB = document.getElementById("leafB");
+    const leafC = document.getElementById("leafC");
+    const bloom = document.getElementById("bloom");
+
+
+    function growPlant(length) {
+
+        const progress =
+            Math.min(length / 400, 1);
+
+
+        if (plantStem) {
+            plantStem.style.strokeDashoffset =
+                stemLength * (1 - progress);
+        }
+
+
+        leafA.classList.toggle("grown", length > 40);
+        leafB.classList.toggle("grown", length > 130);
+        leafC.classList.toggle("grown", length > 250);
+        bloom.classList.toggle("grown", length >= 380);
+
+
+        leafA.style.transitionDelay = "0s";
+        leafB.style.transitionDelay = ".05s";
+        leafC.style.transitionDelay = ".1s";
+    }
+
+
+    function updateStage(length) {
+
+        let index = 0;
+
+        growthStages.forEach((stage, i) => {
+            if (length >= stage.min) index = i;
+        });
+
+
+        if (index === currentStage) return;
+
+        currentStage = index;
+
+        const stage = growthStages[index];
+
+
+        growthStage.querySelector(".stage-icon")
+            .textContent = stage.icon;
+
+        growthStage.querySelector(".stage-text")
+            .textContent = stage.text;
+
+
+        growthStage.classList.remove("changed");
+
+        void growthStage.offsetWidth;
+
+        growthStage.classList.add("changed");
+    }
+
+
+    journal.addEventListener("input", () => {
+
+        const length = journal.value.length;
+
+
+        characterCount.textContent =
+            `${length} character${length === 1 ? "" : "s"}`;
+
+
+        characterCount.classList.add("bump");
+
+        setTimeout(() => characterCount.classList.remove("bump"), 180);
+
+
+        depthFill.style.width =
+            Math.min((length / 400) * 100, 100) + "%";
+
+
+        growPlant(length);
+        updateStage(length);
+
+
+        journalCard.classList.toggle("typing", length > 0);
+
+    });
+
+
+    updateStage(0);
+
+
+    /* =========================
+       SPROUT BURST
+    ========================= */
+
+    function burstSparkles(element) {
+
+        if (reduceMotion) return;
+
+        const box = element.getBoundingClientRect();
+
+        const glyphs =
+            ["🌱", "🍃", "🌿", "✨", "🍀", "💚"];
+
+
+        const big = document.createElement("div");
+
+        big.className = "grow-burst";
+        big.textContent = "🌱";
+
+        big.style.left = (box.left + box.width / 2) + "px";
+        big.style.top = (box.top + box.height / 2) + "px";
+
+        document.body.appendChild(big);
+
+        setTimeout(() => big.remove(), 1500);
+
+
+        for (let i = 0; i < 18; i++) {
+
+            const sparkle = document.createElement("div");
+
+            sparkle.className = "sparkle";
+
+            sparkle.textContent =
+                glyphs[Math.floor(Math.random() * glyphs.length)];
+
+            sparkle.style.left = (box.left + box.width / 2) + "px";
+            sparkle.style.top = (box.top + box.height / 2) + "px";
+
+            sparkle.style.setProperty("--dx", (Math.random() * 260 - 130) + "px");
+            sparkle.style.setProperty("--dy", (-70 - Math.random() * 160) + "px");
+            sparkle.style.setProperty("--rot", (Math.random() * 540 - 270) + "deg");
+
+            sparkle.style.animationDelay = (Math.random() * 0.2) + "s";
+
+            document.body.appendChild(sparkle);
+
+            setTimeout(() => sparkle.remove(), 1600);
+        }
+    }
+
+
+    /* =========================
+       COUNT UP
+    ========================= */
+
+    function countUp(element, target) {
+
+        if (reduceMotion || target === 0) {
+            element.textContent = target;
+            return;
+        }
+
+        const duration = 900;
+        const start = performance.now();
+
+        function step(now) {
+
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            element.textContent = Math.round(eased * target);
+
+            if (progress < 1) requestAnimationFrame(step);
+        }
+
+        requestAnimationFrame(step);
+    }
+
+
+    /* =========================
+       VIEW SWITCHING
+    ========================= */
+
+    function showView(view) {
+
+        const today = document.getElementById("todayView");
+        const insights = document.getElementById("insightsView");
+        const space = document.getElementById("spaceView");
+        const about = document.getElementById("aboutView");
+
+        const todayNav = document.getElementById("todayNav");
+        const insightsNav = document.getElementById("insightsNav");
+        const spaceNav = document.getElementById("spaceNav");
+        const aboutNav = document.getElementById("aboutNav");
+
+
+        today.classList.remove("active");
+        insights.classList.remove("active");
+        space.classList.remove("active");
+        about.classList.remove("active");
+
+        todayNav.classList.remove("active");
+        insightsNav.classList.remove("active");
+        spaceNav.classList.remove("active");
+        aboutNav.classList.remove("active");
+
+
+        if (view === "today") {
+
+            today.classList.add("active");
+            todayNav.classList.add("active");
+            moveIndicator(todayNav);
+
+        } else if (view === "space") {
+
+            space.classList.add("active");
+            spaceNav.classList.add("active");
+            moveIndicator(spaceNav);
+
+            loadHistory();
+
+        } else if (view === "about") {
+
+            about.classList.add("active");
+            aboutNav.classList.add("active");
+            moveIndicator(aboutNav);
+
+        } else {
+
+            insights.classList.add("active");
+            insightsNav.classList.add("active");
+            moveIndicator(insightsNav);
+
+            loadHistory();
+        }
+
+
+        observeReveals();
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+
+    /* =========================
+       SAVE JOURNAL
+    ========================= */
+
+    async function saveJournal() {
+
+        const content = journal.value.trim();
+
+        const message = document.getElementById("message");
+        const saveButton = document.getElementById("saveButton");
+
+
+        function showMessage(text, type) {
+
+            message.textContent = text;
+            message.className = type + " show";
+
+            setTimeout(() => message.classList.remove("show"), 500);
+        }
+
+
+        if (!content) {
+
+            showMessage(
+                "Write something first — even just a few words.",
+                "error"
+            );
+
+            journal.focus();
+            return;
+        }
+
+
+        if (!selectedMood) {
+            showMessage("Pick a mood first 💚", "error");
+            return;
+        }
+
+
+        saveButton.classList.add("saving");
+        saveButton.textContent = "Planting... 🌱";
+
+
+        try {
+
+            const response =
+                await fetch("/api/journal", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        student_id: "MB-1024",
+                        content: content,
+                        mood: selectedMood
+                    })
+
+                });
+
+
+            const result = await response.json();
+
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || "Unable to save reflection."
+                );
+            }
+
+
+            showMessage("Planted privately 🌱", "success");
+
+            saveButton.textContent = "Grown ✓";
+
+            burstSparkles(saveButton);
+
+
+            journal.value = "";
+            characterCount.textContent = "0 characters";
+            depthFill.style.width = "0%";
+
+            growPlant(0);
+
+            currentStage = -1;
+            updateStage(0);
+
+
+            journalCard.classList.remove("typing");
+
+
+            document.querySelectorAll(".mood")
+                .forEach(item => item.classList.remove("selected"));
+
+            document.querySelectorAll(".chip")
+                .forEach(item => item.classList.remove("selected"));
+
+
+            selectedMood = "";
+
+            await loadHistory();
+
+
+            setTimeout(() => {
+                saveButton.textContent = "Plant this reflection 🌱";
+            }, 1800);
+
+
+            console.log("Local wellbeing analysis:", result);
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Couldn't save your reflection. Please try again.",
+                "error"
+            );
+
+            saveButton.textContent = "Try again →";
+        }
+
+
+        saveButton.classList.remove("saving");
+
+    }
+
+
+    /* =========================
+       HISTORY
+    ========================= */
+
+    async function loadHistory() {
+
+        try {
+
+            const response =
+                await fetch("/api/student/history?student_id=MB-1024");
+
+            const entries = await response.json();
+
+
+            updateInsights(entries);
+            updateSpace(entries);
+            updateWeekDots(entries);
+            checkStarReward(entries);
+
+        } catch (error) {
+            console.error("History error:", error);
+        }
+
+    }
+
+
+    /* =========================
+       WEEK DOTS
+    ========================= */
+
+    function updateWeekDots(entries) {
+
+        const dots =
+            document.querySelectorAll("#weekDots .day-dot");
+
+        const recent =
+            entries.slice(0, 7).reverse();
+
+        const offset =
+            7 - recent.length;
+
+
+        dots.forEach((dot, index) => {
+
+            const entry = recent[index - offset];
+
+            const emoji =
+                entry ? (moodInfo[entry.mood]?.emoji || "🌱") : "—";
+
+
+            if (dot.textContent.trim() === emoji) return;
+
+
+            dot.style.transition = "none";
+            dot.style.transform = "scale(.5)";
+            dot.style.opacity = "0";
+
+
+            setTimeout(() => {
+
+                dot.textContent = emoji;
+
+                dot.classList.toggle("filled", Boolean(entry));
+
+                dot.style.transition =
+                    "transform .5s cubic-bezier(.34,1.56,.64,1), opacity .35s ease, background .5s ease";
+
+                dot.style.transform = "scale(1)";
+                dot.style.opacity = "1";
+
+            }, 60 + index * 60);
+
+        });
+    }
+
+
+    /* =========================
+       INSIGHTS
+    ========================= */
+
+    function updateInsights(entries) {
+
+        const count = document.getElementById("reflectionCount");
+        const latestMood = document.getElementById("latestMood");
+        const history = document.getElementById("moodHistory");
+
+
+        countUp(count, entries.length);
+
+
+        if (!entries.length) {
+
+            latestMood.textContent = "—";
+
+            history.innerHTML = `
+                <div class="empty-insights">
+                    Start checking in to grow your garden 🌱
+                </div>
+            `;
+
+            document.getElementById("insightMessage").textContent =
+                "Your insights will grow as you keep checking in.";
+
+            return;
+        }
+
+
+        const latest = entries[0];
+
+        latestMood.textContent =
+            moodInfo[latest.mood]?.emoji || "🌱";
+
+
+        const recent = entries.slice(0, 7).reverse();
+
+
+        history.innerHTML =
+            recent.map((entry, index) => {
+
+                const info =
+                    moodInfo[entry.mood] || { emoji: "🌱" };
+
+                const date =
+                    new Date(entry.created_at);
+
+                const label =
+                    date.toLocaleDateString(
+                        "en-IN",
+                        { day: "numeric", month: "short" }
+                    );
+
+
+                const height =
+                    Math.min(48 + index * 8, 98);
+
+
+                const leaves = `
+                    <span class="stem-leaf left"
+                          style="bottom:${height * 0.3}px; animation-delay:${index * 0.08 + 0.3}s;">
+                    </span>
+                    <span class="stem-leaf right"
+                          style="bottom:${height * 0.6}px; animation-delay:${index * 0.08 + 0.42}s;">
+                    </span>
+                `;
+
+
+                return `
+                    <div class="history-item">
+
+                        <div class="history-emoji"
+                             style="animation-delay:${index * 0.25}s;">
+                            ${info.emoji}
+                        </div>
+
+                        <div class="history-stem"
+                             style="height:${height}px; animation-delay:${index * 0.08}s;">
+                            ${leaves}
+                        </div>
+
+                        <span class="history-date">${label}</span>
+
+                    </div>
+                `;
+
+            }).join("");
+
+
+        document.getElementById("insightMessage").textContent =
+            entries.length === 1
+                ? "You've planted your first reflection. Keep checking in whenever it feels useful."
+                : `You've grown ${entries.length} reflections so far. Your history is here for you to notice your own patterns over time.`;
+    }
+
+
+    /* =========================
+       YOUR SPACE
+    ========================= */
+
+    function updateSpace(entries) {
+
+        const archive = document.getElementById("journalArchive");
+        const spaceCount = document.getElementById("spaceCount");
+
+
+        spaceCount.textContent =
+            `${entries.length} reflection${entries.length === 1 ? "" : "s"}`;
+
+
+        if (!entries.length) {
+
+            archive.innerHTML = `
+                <div class="card empty-space">
+                    <div class="empty-icon">🌱</div>
+                    <h3>Your space is still growing</h3>
+                    <p>Save your first reflection and it will appear here.</p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        archive.innerHTML =
+            entries.map((entry, index) => {
+
+                const info =
+                    moodInfo[entry.mood] || {
+                        emoji: "🌱",
+                        color: "#52795f",
+                        bg: "#edf5ec",
+                        glow: "rgba(105,155,115,.14)"
+                    };
+
+
+                const date = new Date(entry.created_at);
+
+
+                const dateLabel =
+                    date.toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                    });
+
+
+                const timeLabel =
+                    date.toLocaleTimeString("en-IN", {
+                        hour: "numeric",
+                        minute: "2-digit"
+                    });
+
+
+                const moodName =
+                    entry.mood
+                        ? entry.mood.charAt(0).toUpperCase() + entry.mood.slice(1)
+                        : "Reflection";
+
+
+                const delay =
+                    Math.min(index * 0.07, 0.5);
+
+
+                return `
+                    <article
+                        class="card journal-entry"
+                        style="
+                            --mood-accent:${info.color};
+                            --mood-bg:${info.bg};
+                            --glow:${info.glow || "rgba(105,155,115,.14)"};
+                            animation-delay:${delay}s;
+                        "
+                    >
+
+                        <span class="entry-node"
+                              style="animation-delay:${delay + 0.15}s;"></span>
+
+                        <span class="corner-sprout">🌿</span>
+
+                        <div class="entry-top">
+
+                            <div class="entry-mood">
+                                ${info.emoji}
+                                ${moodName}
+                            </div>
+
+                            <div class="entry-date">
+                                ${dateLabel} · ${timeLabel}
+                            </div>
+
+                        </div>
+
+                        <div class="entry-content">
+                            ${escapeHtml(entry.content)}
+                        </div>
+
+                        <div class="entry-number">
+                            🌱 Reflection ${entries.length - index}
+                        </div>
+
+                    </article>
+                `;
+
+            }).join("");
+    }
+
+
+    function escapeHtml(text) {
+
+        const div = document.createElement("div");
+
+        div.textContent = text || "";
+
+        return div.innerHTML;
+    }
+
+
+
+
+    /* =========================================================
+       STAR JAR — 7 DAY REWARD
+       A complete client-side reward layer.
+    ========================================================= */
+
+    const STAR_JAR_KEY = "sprout_star_jar";
+
+    function getStarData() {
+
+        try {
+            return JSON.parse(localStorage.getItem(STAR_JAR_KEY)) || {
+                stars: 0,
+                rewardedBlocks: 0
+            };
+        } catch (error) {
+            return {
+                stars: 0,
+                rewardedBlocks: 0
+            };
+        }
+
+    }
+
+
+    function saveStarData(data) {
+        localStorage.setItem(
+            STAR_JAR_KEY,
+            JSON.stringify(data)
+        );
+    }
+
+
+    function getJournalDates(entries) {
+
+        return [
+            ...new Set(
+                entries.map(entry => {
+                    const date = new Date(entry.created_at);
+                    return date.toLocaleDateString("en-CA");
+                })
+            )
+        ].sort(
+            (a, b) => new Date(a) - new Date(b)
+        );
+
+    }
+
+
+    function getCurrentStreak(entries) {
+
+        const dates = getJournalDates(entries);
+
+        if (!dates.length) return 0;
+
+        let streak = 1;
+
+        for (let i = dates.length - 1; i > 0; i--) {
+
+            const current = new Date(dates[i]);
+            const previous = new Date(dates[i - 1]);
+
+            const difference = Math.round(
+                (current - previous) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            if (difference === 1) {
+                streak++;
+            } else {
+                break;
+            }
+
+        }
+
+        return streak;
+
+    }
+
+
+    function getCompletedSevenDayBlocks(entries) {
+
+        const dates = getJournalDates(entries);
+
+        if (!dates.length) return 0;
+
+        let totalBlocks = 0;
+        let runLength = 1;
+
+        for (let i = 1; i < dates.length; i++) {
+
+            const previous = new Date(dates[i - 1]);
+            const current = new Date(dates[i]);
+
+            const difference = Math.round(
+                (current - previous) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            if (difference === 1) {
+                runLength++;
+            } else {
+                totalBlocks += Math.floor(runLength / 7);
+                runLength = 1;
+            }
+
+        }
+
+        totalBlocks += Math.floor(runLength / 7);
+
+        return totalBlocks;
+
+    }
+
+
+    function renderStarJar(stars) {
+
+        const jar = document.getElementById("jarStars");
+        if (!jar) return;
+
+        jar.innerHTML = "";
+
+        const positions = [
+            [18, 38], [42, 28], [62, 42], [30, 58], [54, 62],
+            [72, 58], [44, 48], [22, 68], [66, 72], [50, 75]
+        ];
+
+        for (let i = 0; i < Math.min(stars, 10); i++) {
+
+            const star = document.createElement("span");
+            star.className = "collected-star";
+            star.textContent = i % 3 === 0 ? "✦" : "★";
+            star.style.left = positions[i][0] + "%";
+            star.style.top = positions[i][1] + "%";
+            star.style.animationDelay = (i * .25) + "s";
+            jar.appendChild(star);
+
+        }
+
+        if (stars > 10) {
+
+            const extra = document.createElement("span");
+            extra.className = "collected-star";
+            extra.textContent = "+" + (stars - 10);
+            extra.style.left = "40%";
+            extra.style.top = "20%";
+            extra.style.fontSize = "10px";
+            jar.appendChild(extra);
+
+        }
+
+    }
+
+
+    function updateStarJar(entries) {
+
+        const count = document.getElementById("starCount");
+        const progressText = document.getElementById("starProgressText");
+        const progressFill = document.getElementById("starProgressFill");
+        const message = document.getElementById("starMessage");
+
+        if (!count || !progressText || !progressFill || !message) return;
+
+        const streak = getCurrentStreak(entries);
+        const completedBlocks = getCompletedSevenDayBlocks(entries);
+        const data = getStarData();
+
+        /*
+           Keep the larger value so previously collected stars
+           are never removed if the student later breaks a streak.
+        */
+        if (completedBlocks > data.stars) {
+            data.stars = completedBlocks;
+            saveStarData(data);
+        }
+
+        count.textContent = data.stars + " ⭐";
+
+        const progress = Math.min(streak, 7);
+        progressText.textContent = progress + " / 7 days";
+        progressFill.style.width = ((progress / 7) * 100) + "%";
+
+        if (streak >= 7) {
+            message.textContent = "You made space for yourself for 7 days. ✦";
+        } else {
+            const remaining = 7 - streak;
+            message.textContent =
+                remaining +
+                (remaining === 1 ? " more day" : " more days") +
+                " until your next falling star.";
+        }
+
+        renderStarJar(data.stars);
+
+    }
+
+
+    function celebrateFallingStar() {
+
+        const jar = document.getElementById("starJar");
+        const card = document.getElementById("starJarCard");
+
+        if (!jar || !card) return;
+
+        const rect = jar.getBoundingClientRect();
+
+        const star = document.createElement("div");
+        star.className = "falling-star";
+        star.textContent = "★";
+        star.style.left = "34%";
+        star.style.top = "6%";
+
+        star.style.setProperty(
+            "--star-x",
+            (rect.left + rect.width / 2 - window.innerWidth * .34) + "px"
+        );
+
+        star.style.setProperty(
+            "--star-y",
+            (rect.top + rect.height / 2 - window.innerHeight * .06) + "px"
+        );
+
+        document.body.appendChild(star);
+
+        card.classList.add("star-earned");
+
+        setTimeout(() => {
+            star.remove();
+            createStarBurst(
+                rect.left + rect.width / 2,
+                rect.top + rect.height / 2
+            );
+        }, 1750);
+
+        setTimeout(() => {
+            card.classList.remove("star-earned");
+        }, 900);
+
+    }
+
+
+    function createStarBurst(x, y) {
+
+        const burst = document.createElement("div");
+        burst.className = "star-burst";
+        burst.textContent = "✦ ✧ ★ ✦";
+        burst.style.left = (x - 35) + "px";
+        burst.style.top = (y - 10) + "px";
+
+        document.body.appendChild(burst);
+
+        setTimeout(() => burst.remove(), 1000);
+
+    }
+
+
+    function checkStarReward(entries) {
+
+        const completedBlocks = getCompletedSevenDayBlocks(entries);
+        const data = getStarData();
+
+        if (completedBlocks > data.rewardedBlocks) {
+
+            const oldRewardedBlocks = data.rewardedBlocks;
+
+            data.rewardedBlocks = completedBlocks;
+            data.stars = Math.max(data.stars, completedBlocks);
+
+            saveStarData(data);
+
+            /* Only animate newly earned stars. */
+            if (completedBlocks > oldRewardedBlocks) {
+                setTimeout(celebrateFallingStar, 450);
+            }
+
+        } else if (completedBlocks > data.stars) {
+
+            data.stars = completedBlocks;
+            saveStarData(data);
+
+        }
+
+        updateStarJar(entries);
+
+    }
+
+
+    /* =========================
+       INITIAL LOAD
+    ========================= */
+
+
+        /* ================================
+           SIMPLE ONE-SONG NIGHT RADIO
+           User-selected YouTube video only.
+           Visible controls: pause/play + mute/unmute.
+           ================================ */
+        const NIGHT_RADIO_VIDEO_ID = "bP9gMpl1gyQ";
+        let nightRadioPlaying = true;
+        let nightRadioMuted = true;
+
+        const nightRadioFrame = document.getElementById("nightRadioFrame");
+        const nightRadioPause = document.getElementById("nightRadioPause");
+        const nightRadioMute = document.getElementById("nightRadioMute");
+
+        function nightRadioUrl() {
+            return `https://www.youtube.com/embed/${NIGHT_RADIO_VIDEO_ID}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0&modestbranding=1&enablejsapi=1`;
+        }
+
+        function updateNightRadioButtons() {
+            nightRadioPause.textContent = nightRadioPlaying ? "❚❚" : "▶";
+            nightRadioPause.setAttribute("aria-label", nightRadioPlaying ? "Pause music" : "Play music");
+            nightRadioMute.textContent = nightRadioMuted ? "🔇" : "🔊";
+            nightRadioMute.setAttribute("aria-label", nightRadioMuted ? "Unmute music" : "Mute music");
+        }
+
+        function sendNightRadioCommand(func) {
+            if (!nightRadioFrame.contentWindow) return;
+            nightRadioFrame.contentWindow.postMessage(
+                JSON.stringify({ event: "command", func, args: [] }),
+                "*"
+            );
+        }
+
+        nightRadioPause.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (nightRadioPlaying) {
+                sendNightRadioCommand("pauseVideo");
+                nightRadioPlaying = false;
+            } else {
+                sendNightRadioCommand("playVideo");
+                nightRadioPlaying = true;
+            }
+            updateNightRadioButtons();
+        });
+
+        nightRadioMute.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (nightRadioMuted) {
+                sendNightRadioCommand("unMute");
+                nightRadioMuted = false;
+            } else {
+                sendNightRadioCommand("mute");
+                nightRadioMuted = true;
+            }
+            updateNightRadioButtons();
+        });
+
+        nightRadioFrame.src = nightRadioUrl();
+        updateNightRadioButtons();
+
+
+    loadHistory();
+
+
+    /* =========================================================
+       ADDITIVE NIGHT ATMOSPHERE
+       Visual only. No existing Sprout state/API/interaction is changed.
+    ========================================================== */
+    (() => {
+        const starField = document.getElementById("starField");
+        const fireflyField = document.getElementById("fireflyField");
+        const seedField = document.getElementById("seedField");
+        const dustField = document.getElementById("dustField");
+
+        if (!starField || !fireflyField || !seedField || !dustField) return;
+
+        const rand = (min, max) => Math.random() * (max - min) + min;
+
+        for (let i = 0; i < 140; i++) {
+            const el = document.createElement("span");
+            el.className = "night-star" + (Math.random() < .05 ? " cross" : "");
+            const size = Math.random() < .82 ? rand(1, 2.4) : rand(2.5, 4);
+            el.style.width = size + "px";
+            el.style.height = size + "px";
+            el.style.left = rand(1, 99) + "%";
+            el.style.top = rand(1, 99) + "%";
+            el.style.setProperty("--twinkle", rand(2.2, 7) + "s");
+            el.style.setProperty("--delay", rand(-7, 0) + "s");
+            el.style.setProperty("--opacity", rand(.15, .82));
+            starField.appendChild(el);
+        }
+
+        for (let i = 0; i < 28; i++) {
+            const el = document.createElement("span");
+            el.className = "night-firefly";
+            el.style.left = rand(2, 98) + "%";
+            el.style.top = rand(24, 92) + "%";
+            el.style.setProperty("--size", rand(2.5, 5.5) + "px");
+            el.style.setProperty("--duration", rand(8, 17) + "s");
+            el.style.setProperty("--blink", rand(2.5, 5.5) + "s");
+            el.style.setProperty("--delay", rand(-16, 0) + "s");
+            fireflyField.appendChild(el);
+        }
+
+        for (let i = 0; i < 24; i++) {
+            const el = document.createElement("span");
+            el.className = "night-seed";
+            el.style.left = rand(0, 100) + "%";
+            el.style.setProperty("--size", rand(3, 7) + "px");
+            el.style.setProperty("--duration", rand(12, 26) + "s");
+            el.style.setProperty("--delay", rand(-26, 0) + "s");
+            seedField.appendChild(el);
+        }
+
+        for (let i = 0; i < 45; i++) {
+            const el = document.createElement("span");
+            el.className = "night-dust";
+            el.style.left = rand(0, 100) + "%";
+            el.style.top = rand(0, 100) + "%";
+            el.style.setProperty("--size", rand(.8, 2.2) + "px");
+            el.style.setProperty("--duration", rand(16, 31) + "s");
+            el.style.setProperty("--delay", rand(-30, 0) + "s");
+            el.style.setProperty("--drift", rand(-90, 90) + "px");
+            dustField.appendChild(el);
+        }
+    })();
+
+</script>
+
+</body>
+</html>
