@@ -20,6 +20,10 @@ CREATE TABLE journal_entries (
 
     mood TEXT,
 
+    day_factors TEXT,
+
+    helpful_needs TEXT,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY(student_id)
