@@ -6,11 +6,14 @@ import json
 from security.encryption import encrypt_text, decrypt_text
 from nlp_model import analyze_text
 from risk_engine import determine_risk
+from database.init_db import initialize_database
 
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database", "sprout.db")
+
+initialize_database()
 
 
 def get_db_connection():
