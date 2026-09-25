@@ -2274,7 +2274,7 @@ nav::before {
 }
 
 </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='sleepy-sprout/sleepy-sprout.css') }}">
 
 <body>
 
@@ -2804,7 +2804,6 @@ nav::before {
 
             <div class="about-developers">
                 <span class="about-developer">Uday Jirwankar</span>
-                <span class="about-developer">Shantanu Sable</span>
             </div>
 
             <div class="about-tagline">
@@ -4312,5 +4311,30 @@ nav::before {
 
 </script>
 
+<div class="sleepy-sprout" aria-hidden="true">
+
+    <div class="sleepy-sprout__zzz">Z</div>
+
+    <div class="sleepy-sprout__body">
+
+        <div class="sleepy-sprout__leaf"></div>
+
+        <div class="sleepy-sprout__eye sleepy-sprout__eye--left">
+            <div class="sleepy-sprout__lid"></div>
+            <div class="sleepy-sprout__pupil"></div>
+        </div>
+
+        <div class="sleepy-sprout__eye sleepy-sprout__eye--right">
+            <div class="sleepy-sprout__lid"></div>
+            <div class="sleepy-sprout__pupil"></div>
+        </div>
+
+        <div class="sleepy-sprout__mouth"></div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='sleepy-sprout/sleepy-sprout.js') }}"></script>
 </body>
 </html>
