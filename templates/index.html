@@ -2238,6 +2238,96 @@ nav::before {
     border: 1px solid rgba(105,155,115,.13);
 }
 
+/* Feature list */
+.about-features {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    margin-top: 16px;
+}
+
+.about-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px 11px;
+    border-radius: 13px;
+    background: rgba(105,155,115,.055);
+    border: 1px solid rgba(105,155,115,.10);
+    color: #718077;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.about-feature-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(105,155,115,.09);
+    border: 1px solid rgba(105,155,115,.13);
+}
+
+.about-feature strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.about-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.about-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 100px;
+    border: 1px solid rgba(105,155,115,.13);
+    background: rgba(105,155,115,.06);
+    color: #718077;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 700;
+    transition:
+        transform .3s var(--ease-spring),
+        background .3s ease,
+        border-color .3s ease,
+        color .3s ease,
+        box-shadow .3s ease;
+}
+
+.about-link:hover {
+    transform: translateY(-2px);
+    background: rgba(105,155,115,.10);
+    border-color: rgba(105,155,115,.22);
+    color: var(--green-dark);
+    box-shadow: 0 8px 18px rgba(48,72,54,.07);
+}
+
+.about-link-icon {
+    min-width: 19px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.about-link.counselor-link {
+    color: var(--green-dark);
+    background: rgba(82,121,95,.09);
+    border-color: rgba(82,121,95,.18);
+}
+
+.about-link.counselor-link:hover {
+    background: rgba(82,121,95,.14);
+}
+
 .about-developers {
     display: flex;
     flex-wrap: wrap;
@@ -2849,6 +2939,57 @@ nav::before {
         </div>
 
         <div class="card about-card">
+            <span class="corner-sprout">✨</span>
+            <h3>Features</h3>
+            <p>
+                Small tools designed to make reflection feel calm, personal,
+                and easy to return to.
+            </p>
+
+            <div class="about-features">
+                <div class="about-feature">
+                    <span class="about-feature-icon">✍️</span>
+                    <div><strong>Private Journal</strong><br>Write in your own space.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">🌤️</span>
+                    <div><strong>Mood Check-ins</strong><br>Capture how you're feeling.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">🌳</span>
+                    <div><strong>Mood Tree</strong><br>Watch check-ins grow over time.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">🌱</span>
+                    <div><strong>My Insights</strong><br>See your recent patterns.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">⭐</span>
+                    <div><strong>Star Jar</strong><br>Build a 7-day reflection streak.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">🎧</span>
+                    <div><strong>Night Radio</strong><br>Listen while you reflect.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">🧠</span>
+                    <div><strong>Local AI signals</strong><br>Potential distress signals are analyzed locally.</div>
+                </div>
+
+                <div class="about-feature">
+                    <span class="about-feature-icon">🛡️</span>
+                    <div><strong>Privacy firewall</strong><br>Only minimal signals are shared for review.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card about-card">
             <span class="corner-sprout">✦</span>
             <h3>Built by</h3>
             <p>
@@ -2858,6 +2999,50 @@ nav::before {
 
             <div class="about-developers">
                 <span class="about-developer">Uday Jirwankar</span>
+            </div>
+
+            <div class="about-links">
+                <a
+                    href="https://www.linkedin.com/in/uday-jirwankar/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="about-link"
+                    aria-label="Uday Jirwankar LinkedIn"
+                >
+                    <span class="about-link-icon">in</span>
+                    <span>LinkedIn</span>
+                </a>
+
+                <a
+                    href="https://github.com/udayjirwankar/sprout"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="about-link"
+                    aria-label="Sprout GitHub repository"
+                >
+                    <span class="about-link-icon">&lt;/&gt;</span>
+                    <span>GitHub</span>
+                </a>
+
+                <a
+                    href="https://sprout-0lzi.onrender.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="about-link"
+                    aria-label="Open Sprout live demo"
+                >
+                    <span class="about-link-icon">↗</span>
+                    <span>Live Demo</span>
+                </a>
+
+                <a
+                    href="/counselor"
+                    class="about-link counselor-link"
+                    aria-label="Open Counselor Dashboard"
+                >
+                    <span class="about-link-icon">🩺</span>
+                    <span>Counselor Dashboard</span>
+                </a>
             </div>
 
             <div class="about-tagline">
