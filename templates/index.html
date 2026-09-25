@@ -2273,8 +2273,62 @@ nav::before {
     .about-card { padding: 22px 20px; }
 }
 
+
+/* =========================================================
+   SPROUT — READABILITY BOOST
+   Larger + bolder supporting text, layout unchanged
+   ========================================================= */
+
+.nav-button { font-size: 14px; font-weight: 700; }
+.eyebrow { font-size: 14px; font-weight: 600; }
+.section-label { font-size: 16px; }
+.hero p { font-size: 17px; font-weight: 500; }
+
+.mood-name { font-size: 13px; font-weight: 600; }
+.typing-row { font-size: 12px; font-weight: 600; }
+.growth-stage { font-size: 13px; font-weight: 700; }
+
+.optional-title { font-size: 15px; }
+.chip { font-size: 13px; font-weight: 600; }
+.privacy { font-size: 13px; font-weight: 600; }
+.save-button { font-size: 14px; }
+#message { font-size: 13px; font-weight: 600; }
+
+.mini-title { font-size: 16px; }
+.mini-subtitle { font-size: 13px; }
+.day-name { font-size: 11px; font-weight: 600; }
+.insight-link { font-size: 13px; }
+.privacy-card p { font-size: 13px; font-weight: 500; }
+
+.space-header p,
+.insights-header p { font-size: 17px; }
+.entry-date { font-size: 13px; font-weight: 600; }
+.entry-content { font-size: 18px; }
+.entry-number { font-size: 12px; }
+.muted { font-size: 14px; }
+.history-date { font-size: 11px; font-weight: 600; }
+
+.about-header p { font-size: 17px; }
+.about-card h3 { font-size: 17px; }
+.about-card p { font-size: 14px; }
+.about-principle { font-size: 13px; font-weight: 500; }
+.about-developer { font-size: 13px; font-weight: 700; }
+.about-tagline { font-size: 13px; }
+
+/* Keep the larger scale comfortable on smaller screens. */
+@media (max-width: 620px) {
+    .nav-button { font-size: 12px; }
+    .hero p { font-size: 15px; }
+    .chip { font-size: 12px; }
+    .privacy { font-size: 12px; }
+    .about-header p { font-size: 15px; }
+    .about-card h3 { font-size: 16px; }
+    .about-card p { font-size: 13px; }
+}
+
 </style>
 <link rel="stylesheet" href="{{ url_for('static', filename='sleepy-sprout/sleepy-sprout.css') }}">
+</head>
 
 <body>
 
