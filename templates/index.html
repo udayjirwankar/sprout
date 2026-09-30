@@ -5,22 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Sprout — Your Little Space</title>
+    <title>Sprout — Your Little Night Garden</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 
 
-    <style>
-    @font-face {
-        font-family: "Danila";
-        src: url("sprout_assets/Danila-Demo.ttf") format("truetype");
-        font-weight: 400 700;
-        font-style: normal;
-        font-display: swap;
-    }
-    </style>
+
     <style>
         * {
             box-sizing: border-box;
@@ -2419,17 +2411,11 @@ nav::before {
 
 </style>
 <link rel="stylesheet" href="{{ url_for('static', filename='sleepy-sprout/sleepy-sprout.css') }}">
-<style>
-    .save-button:disabled { cursor: wait; opacity: .75; }
-    @media (max-width: 620px) {
-        #mainNav { flex-wrap: wrap; gap: 10px; }
-        #mainNav .nav-right { width: 100%; justify-content: space-between; gap: 0; }
-        #mainNav .nav-button { padding: 8px 6px; font-size: 11px; white-space: nowrap; }
-    }
-</style>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='night-garden.css') }}">
 </head>
 
-<body data-student-id="{{ demo_student_id }}">
+<body class="student-page" data-student-id="{{ demo_student_id }}">
 
 <div class="scroll-progress" id="scrollProgress"></div>
 
@@ -2441,12 +2427,7 @@ nav::before {
 </div>
 
 <div class="night-sky" id="nightSky" aria-hidden="true">
-    <div class="night-moon-halo"></div>
-    <div class="night-moon">
-        <span class="moon-crater moon-crater-a"></span>
-        <span class="moon-crater moon-crater-b"></span>
-        <span class="moon-crater moon-crater-c"></span>
-    </div>
+
     <div id="starField"></div>
     <div id="fireflyField"></div>
     <div id="seedField"></div>
@@ -2482,47 +2463,17 @@ nav::before {
      NAVIGATION
 ========================= -->
 
-<nav id="mainNav">
-
-    <div class="brand" onclick="showView('today')">
-        <div class="brand-icon"><span>🌱</span></div>
-        <div class="brand-name">Sprout</div>
-    </div>
-
-    <div class="nav-right">
-
-        <span class="nav-indicator" id="navIndicator"></span>
-
-        <button id="todayNav" class="nav-button active" onclick="showView('today')">
-            Today
-        </button>
-
-        <button id="insightsNav" class="nav-button" onclick="showView('insights')">
-            My Insights
-        </button>
-
-        <button id="spaceNav" class="nav-button" onclick="showView('space')">
-            🔒 Your Space
-        </button>
-
-        <button id="aboutNav" class="nav-button" onclick="showView('about')">
-            About
-        </button>
-
-        <a href="{{ url_for('counselor_dashboard') }}" class="nav-button" style="text-decoration:none;">Counselor view</a>
-
-    </div>
-
-</nav>
+{% include 'demo_banner.html' %}
 
 
 
     <!-- Compact one-line Night Radio -->
+
     <section class="night-radio-bar" id="nightRadioBar" aria-label="Sprout Night Radio">
         <span class="night-radio-dot" aria-hidden="true"></span>
         <span class="night-radio-label">Night Radio</span>
         <span class="night-radio-sep">·</span>
-        <div class="night-radio-track" id="nightRadioTrack">Night Radio <span>— now playing</span></div>
+        <div class="night-radio-track" id="nightRadioTrack">Night Radio <span>— background music</span></div>
         <span class="night-radio-mood" id="nightRadioMood">midnight · calm · feel good</span>
         <div class="night-radio-controls">
             <button class="night-radio-btn" id="nightRadioPause" type="button" aria-label="Pause music">❚❚</button>
@@ -2539,7 +2490,10 @@ nav::before {
 
 <main>
 
-    {% include 'demo_banner.html' %}
+    <div id="historyNotice" class="feedback history-feedback" role="status" aria-live="polite" hidden>
+        <span id="historyNoticeText"></span>
+        <button id="historyRetryButton" type="button" class="quiet-button" onclick="loadHistory()" hidden>Try again</button>
+    </div>
 
     <!-- =========================
          TODAY
@@ -2548,28 +2502,56 @@ nav::before {
     <section id="todayView" class="view active">
 
         <div class="hero">
+            <div class="hero-copy">
 
             <div class="eyebrow">
                 <span class="seed"></span>
-                A little space for you
+                A little night garden, just for you
             </div>
 
             <h1 id="heroHeading">
-                <span class="word">How</span>
-                <span class="word">are</span>
-                <span class="word">you</span>
-                <span class="word">feeling</span>
-                <span class="word accent">right</span>
-                <span class="word accent">now?</span>
+                <span class="word">A</span>
+                <span class="word">little</span>
+                <span class="word">quiet,</span>
+                <span class="word accent">just</span>
+                <span class="word accent">for</span>
+                <span class="word accent">you.</span>
             </h1>
 
             <p>
                 No pressure. No perfect words.
                 Just take a moment and check in with yourself.
             </p>
+            </div>
+            <div class="hero-companion" aria-hidden="true">
+                <span class="companion-star star-one">✦</span>
+                <span class="companion-star star-two">✧</span>
+                <div class="sleepy-sprout" aria-hidden="true">
 
+    <div class="sleepy-sprout__zzz">Z</div>
+
+    <div class="sleepy-sprout__body">
+
+        <div class="sleepy-sprout__leaf"></div>
+
+        <div class="sleepy-sprout__eye sleepy-sprout__eye--left">
+            <div class="sleepy-sprout__lid"></div>
+            <div class="sleepy-sprout__pupil"></div>
         </div>
 
+        <div class="sleepy-sprout__eye sleepy-sprout__eye--right">
+            <div class="sleepy-sprout__lid"></div>
+            <div class="sleepy-sprout__pupil"></div>
+        </div>
+
+        <div class="sleepy-sprout__mouth"></div>
+
+    </div>
+
+</div>
+                <span class="companion-caption">a quiet little companion</span>
+            </div>
+        </div>
 
         <div class="today-grid">
 
@@ -2580,36 +2562,36 @@ nav::before {
                 <span class="corner-sprout">🌿</span>
 
                 <div class="section-label">
-                    How's the vibe?
+                    How are you feeling?
                 </div>
 
-                <div class="moods">
+                <div class="moods" role="group" aria-label="Choose your mood">
 
-                    <button class="mood" data-mood="great">
+                    <button type="button" class="mood" aria-pressed="false" data-mood="great">
                         <span class="sprout-top">🌿</span>
                         <span class="mood-emoji">🤩</span>
                         <span class="mood-name">Great</span>
                     </button>
 
-                    <button class="mood" data-mood="good">
+                    <button type="button" class="mood" aria-pressed="false" data-mood="good">
                         <span class="sprout-top">🌿</span>
                         <span class="mood-emoji">😊</span>
                         <span class="mood-name">Good</span>
                     </button>
 
-                    <button class="mood" data-mood="okay">
+                    <button type="button" class="mood" aria-pressed="false" data-mood="okay">
                         <span class="sprout-top">🌿</span>
                         <span class="mood-emoji">😌</span>
                         <span class="mood-name">Okay</span>
                     </button>
 
-                    <button class="mood" data-mood="low">
+                    <button type="button" class="mood" aria-pressed="false" data-mood="low">
                         <span class="sprout-top">🌿</span>
                         <span class="mood-emoji">😔</span>
                         <span class="mood-name">Low</span>
                     </button>
 
-                    <button class="mood" data-mood="difficult">
+                    <button type="button" class="mood" aria-pressed="false" data-mood="difficult">
                         <span class="sprout-top">🌿</span>
                         <span class="mood-emoji">😣</span>
                         <span class="mood-name">Difficult</span>
@@ -2618,15 +2600,17 @@ nav::before {
                 </div>
 
 
-                <div class="section-label">
+                <label class="section-label" for="journal">
                     What's on your mind?
-                </div>
+                </label>
 
                 <div class="journal-wrap">
 
                     <textarea
                         id="journal"
-                        placeholder="Write it messy. Write it honestly. This is your space..."
+                        maxlength="20000"
+                        aria-describedby="journalHint characterCount"
+                        placeholder="A thought, a little win, a heavy feeling… start anywhere."
                     ></textarea>
 
                     <!-- the plant that grows while you write -->
@@ -2651,6 +2635,7 @@ nav::before {
 
                 </div>
 
+                <p id="journalHint" class="journal-hint">A few honest words are enough. There is no perfect way to write.</p>
                 <div class="typing-row">
 
                     <span class="growth-stage" id="growthStage">
@@ -2667,6 +2652,9 @@ nav::before {
                 </div>
 
 
+                <details class="optional-details">
+                    <summary>A little more about your day <span>optional</span></summary>
+                    <div class="optional-content">
                 <div class="optional">
 
                     <div class="optional-title">
@@ -2675,14 +2663,14 @@ nav::before {
                     </div>
 
                     <div class="chips" id="dayFactors">
-                        <button class="chip">📚 College</button>
-                        <button class="chip">👥 Friends</button>
-                        <button class="chip">🏠 Family</button>
-                        <button class="chip">💼 Work</button>
-                        <button class="chip">❤️ Relationships</button>
-                        <button class="chip">💰 Money</button>
-                        <button class="chip">🌱 Personal</button>
-                        <button class="chip">✨ Something else</button>
+                        <button type="button" class="chip" aria-pressed="false">📚 College</button>
+                        <button type="button" class="chip" aria-pressed="false">👥 Friends</button>
+                        <button type="button" class="chip" aria-pressed="false">🏠 Family</button>
+                        <button type="button" class="chip" aria-pressed="false">💼 Work</button>
+                        <button type="button" class="chip" aria-pressed="false">❤️ Relationships</button>
+                        <button type="button" class="chip" aria-pressed="false">💰 Money</button>
+                        <button type="button" class="chip" aria-pressed="false">🌱 Personal</button>
+                        <button type="button" class="chip" aria-pressed="false">✨ Something else</button>
                     </div>
 
                 </div>
@@ -2696,23 +2684,25 @@ nav::before {
                     </div>
 
                     <div class="chips" id="helpfulNeeds">
-                        <button class="chip">🌿 Some quiet</button>
-                        <button class="chip">💬 Someone to talk to</button>
-                        <button class="chip">🎯 Motivation</button>
-                        <button class="chip">🧘 Time to relax</button>
-                        <button class="chip">🤝 Support</button>
-                        <button class="chip">✍️ Just writing</button>
+                        <button type="button" class="chip" aria-pressed="false">🌿 Some quiet</button>
+                        <button type="button" class="chip" aria-pressed="false">💬 Someone to talk to</button>
+                        <button type="button" class="chip" aria-pressed="false">🎯 Motivation</button>
+                        <button type="button" class="chip" aria-pressed="false">🧘 Time to relax</button>
+                        <button type="button" class="chip" aria-pressed="false">🤝 Support</button>
+                        <button type="button" class="chip" aria-pressed="false">✍️ Just writing</button>
                     </div>
 
                 </div>
 
 
+                    </div>
+                </details>
+
                 <div class="save-area">
 
                     <div class="privacy">
-                        🔒 Your journal is encrypted and stays private.
-                        Sprout only sends limited wellbeing signals for
-                        authorized support when configured thresholds are met.
+                        🔒 Reflections are stored encrypted. The counselor view shows
+                        generated signals, never your journal text.
                     </div>
 
                     <button id="saveButton" class="save-button" onclick="saveJournal()">
@@ -2721,7 +2711,7 @@ nav::before {
 
                 </div>
 
-                <div id="message"></div>
+                <div id="message" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div>
 
             </div>
 
@@ -2763,7 +2753,7 @@ nav::before {
                     <div class="star-jar-header">
                         <div>
                             <div class="mini-title">🌙 Your Star Jar</div>
-                            <div class="mini-subtitle">Keep showing up for yourself.</div>
+                            <div class="mini-subtitle">Little moments, gathered here.</div>
                         </div>
                         <div class="star-count" id="starCount">0 ⭐</div>
                     </div>
@@ -2788,16 +2778,18 @@ nav::before {
                     </div>
 
                     <p class="star-message" id="starMessage">
-                        Seven days of showing up for yourself = one falling star.
+                        A little star grows from seven days of reflections. Go at your own pace.
                     </p>
 
                 </div>
+
+
 
                 <div class="card mini-card privacy-card reveal">
 
                     <span class="corner-sprout">🌱</span>
 
-                    <div class="mini-title">🔐 Your privacy matters</div>
+                    <div class="mini-title">🔐 A private moment</div>
 
                     <p>
                         Your journal is encrypted before it is stored.
@@ -2824,12 +2816,23 @@ nav::before {
 
             <div>
                 <h2>Your Space 🔒</h2>
-                <p>Your private journal. Your words, your history, your space.</p>
+                <p>Your words, gathered here while this guest workspace lasts.</p>
             </div>
 
-            <div id="spaceCount" class="space-count">0 reflections</div>
+            <div class="space-actions">
+                <div id="spaceCount" class="space-count">0 reflections</div>
+                <form method="post" action="{{ url_for('reset_demo') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="quiet-button">New workspace <span aria-hidden="true">＋</span></button>
+                </form>
+            </div>
 
         </div>
+
+        <details class="space-history-help">
+            <summary>About this temporary space</summary>
+            <p>This guest prototype has no accounts. This browser holds your workspace; access expires after 8 hours of inactivity, and guest records are cleaned up after 24 hours. Server restarts or deployments may also clear history. New workspace starts an empty space. Keep a separate copy of anything you want to save permanently.</p>
+        </details>
 
         <div id="journalArchive" class="journal-archive">
 
@@ -2901,7 +2904,7 @@ nav::before {
 
     </section>
 
-</main>
+
 
 
 
@@ -2928,6 +2931,7 @@ nav::before {
         <div class="card about-card">
             <span class="corner-sprout">🌿</span>
             <h3>Why Sprout?</h3>
+            <p class="prototype-note">A college project and guest prototype, without accounts. History is temporary; see Your Space for how it works.</p>
             <p>
                 Sprout is built around a simple idea: students should be able
                 to express themselves honestly without feeling watched.
@@ -2992,7 +2996,7 @@ nav::before {
 
                 <div class="about-feature">
                     <span class="about-feature-icon">🧠</span>
-                    <div><strong>Local AI signals</strong><br>Potential distress signals are analyzed locally.</div>
+                    <div><strong>Local AI signals</strong><br>Text is analyzed on the server; no external AI API.</div>
                 </div>
 
                 <div class="about-feature">
@@ -3061,6 +3065,8 @@ nav::before {
 </section>
 
 
+</main>
+
 <button class="to-top" id="toTop" aria-label="Back to top"
         onclick="window.scrollTo({top:0, behavior:'smooth'})">
     ↑
@@ -3083,36 +3089,36 @@ nav::before {
     const moodInfo = {
 
         great: {
-            color: "#4f8060",
-            bg: "#e5f2e4",
+            color: "#bde7bb",
+            bg: "#293b35",
             glow: "rgba(90,145,101,.15)",
             emoji: "🤩"
         },
 
         good: {
-            color: "#5c8466",
-            bg: "#e8f3e7",
+            color: "#a8dcc6",
+            bg: "#263b3c",
             glow: "rgba(91,137,101,.14)",
             emoji: "😊"
         },
 
         okay: {
-            color: "#74678d",
-            bg: "#eeeaf6",
+            color: "#d4c0f5",
+            bg: "#322c44",
             glow: "rgba(119,102,150,.13)",
             emoji: "😌"
         },
 
         low: {
-            color: "#637c8d",
-            bg: "#e8eff3",
+            color: "#adcae8",
+            bg: "#263747",
             glow: "rgba(92,124,145,.14)",
             emoji: "😔"
         },
 
         difficult: {
-            color: "#96705e",
-            bg: "#f5e9e2",
+            color: "#e6bfae",
+            bg: "#3d3034",
             glow: "rgba(150,112,94,.14)",
             emoji: "😣"
         }
@@ -3359,10 +3365,11 @@ nav::before {
 
 
             document.querySelectorAll(".mood")
-                .forEach(item => item.classList.remove("selected"));
+                .forEach(item => { item.classList.remove("selected"); item.setAttribute("aria-pressed", "false"); });
 
 
             button.classList.add("selected", "pop");
+            button.setAttribute("aria-pressed", "true");
 
             selectedMood = button.dataset.mood;
 
@@ -3431,6 +3438,7 @@ nav::before {
             addRipple(event, chip);
 
             chip.classList.toggle("selected");
+            chip.setAttribute("aria-pressed", String(chip.classList.contains("selected")));
 
             if (chip.classList.contains("selected")) {
                 leafPuff(chip);
@@ -3703,6 +3711,10 @@ nav::before {
         }
 
 
+        document.querySelectorAll(".nav-button").forEach(button => {
+            if (button.classList.contains("active")) button.setAttribute("aria-current", "page");
+            else button.removeAttribute("aria-current");
+        });
         observeReveals();
 
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -3725,7 +3737,7 @@ nav::before {
         function showMessage(text, type) {
 
             message.textContent = text;
-            message.className = type + " show";
+            message.className = "feedback " + type + " show";
 
             // Leave failures visible long enough to read; a new attempt replaces them.
         }
@@ -3744,14 +3756,19 @@ nav::before {
 
 
         if (!selectedMood) {
-            showMessage("Pick a mood first 💚", "error");
+            showMessage("Choose the mood that feels closest 💚", "error");
+            document.querySelector(".mood").focus();
             return;
         }
 
 
         saveButton.classList.add("saving");
         saveButton.disabled = true;
-        saveButton.textContent = "Planting... 🌱";
+        saveButton.textContent = "Saving your reflection… 🌱";
+        showMessage("Saving your words…", "loading");
+        journalCard.setAttribute("aria-busy", "true");
+        const writingControls = [journal, ...document.querySelectorAll(".mood, .chip")];
+        writingControls.forEach(control => { control.disabled = true; });
 
 
         try {
@@ -3789,9 +3806,9 @@ nav::before {
             }
 
 
-            showMessage("Planted privately 🌱", "success");
+            showMessage("Reflection saved 🌱 You can find it in Your Space.", "success");
 
-            saveButton.textContent = "Grown ✓";
+            saveButton.textContent = "Saved ✓";
 
             burstSparkles(saveButton);
 
@@ -3810,10 +3827,10 @@ nav::before {
 
 
             document.querySelectorAll(".mood")
-                .forEach(item => item.classList.remove("selected"));
+                .forEach(item => { item.classList.remove("selected"); item.setAttribute("aria-pressed", "false"); });
 
             document.querySelectorAll(".chip")
-                .forEach(item => item.classList.remove("selected"));
+                .forEach(item => { item.classList.remove("selected"); item.setAttribute("aria-pressed", "false"); });
 
 
             selectedMood = "";
@@ -3822,7 +3839,7 @@ nav::before {
 
 
             setTimeout(() => {
-                saveButton.textContent = "Plant this reflection 🌱";
+                if (!saveButton.disabled) saveButton.textContent = "Plant this reflection 🌱";
             }, 1800);
 
 
@@ -3833,7 +3850,9 @@ nav::before {
             console.error(error);
 
             showMessage(
-                error.message || "Couldn't save your reflection. Please try again.",
+                error instanceof TypeError || error instanceof SyntaxError
+                    ? "Couldn't save. Check your connection and try again. Your draft is still here."
+                    : error.message || "Couldn't save your reflection. Please try again.",
                 "error"
             );
 
@@ -3843,6 +3862,8 @@ nav::before {
 
         saveButton.classList.remove("saving");
         saveButton.disabled = false;
+        writingControls.forEach(control => { control.disabled = false; });
+        journalCard.setAttribute("aria-busy", "false");
 
     }
 
@@ -3852,31 +3873,32 @@ nav::before {
     ========================= */
 
     async function loadHistory() {
-
+        const notice = document.getElementById("historyNotice");
+        const text = document.getElementById("historyNoticeText");
+        const retry = document.getElementById("historyRetryButton");
+        notice.hidden = false;
+        notice.className = "feedback history-feedback loading";
+        text.textContent = "Gathering your reflections…";
+        retry.hidden = true;
         try {
-
-            const response =
-                await fetch("/api/student/history");
-
+            const response = await fetch("/api/student/history");
             if (response.status === 409) {
-                document.getElementById("message").textContent = "Your demo workspace expired. Copy any draft, then refresh Sprout.";
-                document.getElementById("message").className = "error show";
-                return;
+                throw new Error("Your guest workspace expired. Copy any draft, then refresh Sprout.");
             }
-            if (!response.ok) throw new Error("Unable to load your reflections.");
-
+            if (!response.ok) throw new Error("Your history couldn't load. Please try again.");
             const entries = await response.json();
-
-
             updateInsights(entries);
             updateSpace(entries);
             updateWeekDots(entries);
             checkStarReward(entries);
-
+            notice.hidden = true;
         } catch (error) {
-            console.error("History error:", error);
+            notice.className = "feedback history-feedback error";
+            text.textContent = error instanceof TypeError || error instanceof SyntaxError
+                ? "Your history couldn't load. Check your connection and try again."
+                : error.message || "Your history couldn't load. Please try again.";
+            retry.hidden = false;
         }
-
     }
 
 
@@ -4267,10 +4289,9 @@ nav::before {
             message.textContent = "You made space for yourself for 7 days. ✦";
         } else {
             const remaining = 7 - streak;
-            message.textContent =
-                remaining +
-                (remaining === 1 ? " more day" : " more days") +
-                " until your next falling star.";
+            message.textContent = streak === 0
+                ? "A little star grows from seven days of reflections. Go at your own pace."
+                : "Your star is growing. " + remaining + (remaining === 1 ? " more day" : " more days") + " of check-ins to reach seven.";
         }
 
         renderStarJar(data.stars);
@@ -4450,7 +4471,8 @@ nav::before {
 
         const rand = (min, max) => Math.random() * (max - min) + min;
 
-        for (let i = 0; i < 140; i++) {
+        const compactSky = window.matchMedia("(max-width: 620px)").matches;
+        for (let i = 0; i < (compactSky ? 32 : 64); i++) {
             const el = document.createElement("span");
             el.className = "night-star" + (Math.random() < .05 ? " cross" : "");
             const size = Math.random() < .82 ? rand(1, 2.4) : rand(2.5, 4);
@@ -4458,13 +4480,13 @@ nav::before {
             el.style.height = size + "px";
             el.style.left = rand(1, 99) + "%";
             el.style.top = rand(1, 99) + "%";
-            el.style.setProperty("--twinkle", rand(2.2, 7) + "s");
+            el.style.setProperty("--twinkle", rand(6, 12) + "s");
             el.style.setProperty("--delay", rand(-7, 0) + "s");
             el.style.setProperty("--opacity", rand(.15, .82));
             starField.appendChild(el);
         }
 
-        for (let i = 0; i < 28; i++) {
+        for (let i = 0; i < (reduceMotion ? 0 : compactSky ? 5 : 10); i++) {
             const el = document.createElement("span");
             el.className = "night-firefly";
             el.style.left = rand(2, 98) + "%";
@@ -4476,7 +4498,7 @@ nav::before {
             fireflyField.appendChild(el);
         }
 
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < (reduceMotion ? 0 : compactSky ? 4 : 8); i++) {
             const el = document.createElement("span");
             el.className = "night-seed";
             el.style.left = rand(0, 100) + "%";
@@ -4486,7 +4508,7 @@ nav::before {
             seedField.appendChild(el);
         }
 
-        for (let i = 0; i < 45; i++) {
+        for (let i = 0; i < (reduceMotion ? 0 : compactSky ? 8 : 16); i++) {
             const el = document.createElement("span");
             el.className = "night-dust";
             el.style.left = rand(0, 100) + "%";
@@ -4500,30 +4522,6 @@ nav::before {
     })();
 
 </script>
-
-<div class="sleepy-sprout" aria-hidden="true">
-
-    <div class="sleepy-sprout__zzz">Z</div>
-
-    <div class="sleepy-sprout__body">
-
-        <div class="sleepy-sprout__leaf"></div>
-
-        <div class="sleepy-sprout__eye sleepy-sprout__eye--left">
-            <div class="sleepy-sprout__lid"></div>
-            <div class="sleepy-sprout__pupil"></div>
-        </div>
-
-        <div class="sleepy-sprout__eye sleepy-sprout__eye--right">
-            <div class="sleepy-sprout__lid"></div>
-            <div class="sleepy-sprout__pupil"></div>
-        </div>
-
-        <div class="sleepy-sprout__mouth"></div>
-
-    </div>
-
-</div>
 
 <script src="{{ url_for('static', filename='sleepy-sprout/sleepy-sprout.js') }}"></script>
 </body>

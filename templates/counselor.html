@@ -747,68 +747,34 @@
             }
         }
     </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='night-garden.css') }}">
 </head>
 
-<body>
+<body class="counselor-page">
+<div class="counselor-atmosphere" aria-hidden="true"><span class="garden-moon">☾</span><i>✦</i><i>✧</i><i>✦</i></div>
+{% include 'demo_banner.html' %}
 
 <div class="app">
 
     <!-- SIDEBAR -->
 
-    <aside class="sidebar">
-
-        <div class="brand">
-            <div class="brand-icon">🌱</div>
-            <div>
-                <div class="brand-name">Sprout</div>
-                <div class="brand-sub">Counselor workspace</div>
-            </div>
-        </div>
-
-        <div class="nav-label">Current workspace</div>
-
-        <div class="side-nav">
-            <div class="side-link active" style="cursor:default;">
-                <span>◉</span>
-                Alerts
-                <span id="sideBadge" class="badge">0</span>
-            </div>
-        </div>
-
-        <div class="side-bottom">
-            <div class="privacy-mini">
-                <strong>🔐 Privacy by design</strong>
-                <span>
-                    Only configured wellbeing signals and limited
-                    metadata are shown here — not raw journal text.
-                </span>
-            </div>
-        </div>
-
-    </aside>
-
-
     <!-- MAIN -->
 
     <main class="main">
 
-        {% include 'demo_banner.html' %}
+
 
         <header class="topbar">
 
             <div>
                 <h1>Counselor Dashboard</h1>
-                <p>Review wellbeing signals that may need human attention.</p>
+                <p>Generated signals from this guest workspace, ready for review.</p>
             </div>
 
-            <div class="profile">
-                <div class="avatar">👩‍💼</div>
-                <div>
-                    <div class="profile-name">Counselor view</div>
-                    <div class="profile-role">Support workspace</div>
-                </div>
-                <a class="refresh" href="{{ url_for('student_home') }}" style="text-decoration:none;">Student view</a>
-            </div>
+            <span class="view-tag">☾ The same garden, a different view</span>
 
         </header>
 
@@ -847,6 +813,7 @@
         </section>
 
 
+        <p id="alertsFeedback" class="feedback" role="status" aria-live="polite"></p>
         <!-- CONTENT -->
 
         <div class="content-grid">
@@ -856,19 +823,19 @@
                 <div class="panel-head">
 
                     <div>
-                        <div class="panel-title">Alerts requiring attention</div>
+                        <div class="panel-title">Workspace alerts <span id="sideBadge" class="badge" aria-label="Pending alerts">0</span></div>
                         <div class="panel-subtitle">
                             Minimal signals for human review — raw journal text stays private.
                         </div>
                     </div>
 
-                    <button class="refresh" onclick="loadAlerts()">
+                    <button id="refreshAlertsButton" class="refresh" type="button" onclick="loadAlerts()">
                         ↻ Refresh
                     </button>
 
                 </div>
 
-                <div id="alertList" class="alert-list">
+                <div id="alertList" class="alert-list" aria-busy="true">
 
                     <div class="empty">
                         <div class="empty-icon">🌱</div>
@@ -1031,9 +998,9 @@
 
         </div>
 
-        <div style="margin-top:18px;">
+        <div class="status-controls">
             <label for="alertStatusSelect">Review status</label>
-            <select id="alertStatusSelect" style="margin:8px; padding:10px; border-radius:8px;">
+            <select id="alertStatusSelect">
                 <option value="PENDING">Pending</option>
                 <option value="REVIEWED">Reviewed</option>
                 <option value="RESOLVED">Resolved</option>
@@ -1059,48 +1026,35 @@ let activeAlertId = null;
 let alertsById = new Map();
 
 async function loadAlerts() {
-
-    const alertList =
-        document.getElementById("alertList");
-
-    alertList.innerHTML = `
-        <div class="empty">
-            <div class="empty-icon">🌱</div>
-            Loading alerts...
-        </div>
-    `;
-
+    const alertList = document.getElementById("alertList");
+    const button = document.getElementById("refreshAlertsButton");
+    const feedback = document.getElementById("alertsFeedback");
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = "Refreshing…";
+    alertList.setAttribute("aria-busy", "true");
+    feedback.className = "feedback loading";
+    feedback.textContent = "Checking this workspace for signals…";
     try {
-
-        const response =
-            await fetch("/api/counselor/alerts");
-
+        const response = await fetch("/api/counselor/alerts");
         if (response.status === 409) {
-            window.location.assign("/");
-            return;
+            throw new Error("This guest workspace expired. Open the student page to start a new one.");
         }
-
-        if (!response.ok) {
-            throw new Error("Unable to load alerts");
-        }
-
-        const alerts =
-            await response.json();
-
+        if (!response.ok) throw new Error("Alerts couldn't load. Check your connection and try Refresh.");
+        const alerts = await response.json();
         updateDashboard(alerts);
-
+        feedback.className = "feedback success";
+        feedback.textContent = "Up to date · " + alerts.length + " alert" + (alerts.length === 1 ? "" : "s") + " in this workspace.";
     } catch (error) {
-
-        console.error(error);
-
-        alertList.innerHTML = `
-            <div class="empty">
-                <div class="empty-icon">⚠️</div>
-                Could not load alerts.
-                <br>
-                <small>Make sure the Flask server is running.</small>
-            </div>
-        `;
+        feedback.className = "feedback error";
+        feedback.textContent = error instanceof TypeError || error instanceof SyntaxError
+            ? "Alerts couldn't load. Check your connection and try Refresh."
+            : error.message || "Alerts couldn't load. Please try Refresh.";
+        if (!alertsById.size) alertList.innerHTML = '<div class="empty"><div class="empty-icon">☾</div>Alerts are unavailable right now.<p>Your existing records have not been changed.</p></div>';
+    } finally {
+        alertList.setAttribute("aria-busy", "false");
+        button.disabled = false;
+        button.textContent = "↻ Refresh";
     }
 }
 
@@ -1161,7 +1115,7 @@ function updateDashboard(alerts) {
         alertList.innerHTML = `
             <div class="empty">
                 <div class="empty-icon">🌱</div>
-                No escalation signals right now.
+                No signals to review.<p>Alerts appear here only when a submitted reflection is flagged by the model.</p>
             </div>
         `;
 
@@ -1226,7 +1180,7 @@ function updateDashboard(alerts) {
                         </div>
 
                         <div>
-                            <span class="status">
+                            <span class="status status-${["PENDING", "REVIEWED", "RESOLVED"].includes(alert.status) ? alert.status.toLowerCase() : "pending"}">
                                 ${escapeHtml(alert.status || "PENDING")}
                             </span>
                         </div>
@@ -1281,6 +1235,7 @@ function openAlertDetails(alert) {
     activeAlertId = alert.alert_id;
     document.getElementById("alertStatusSelect").value = alert.status || "PENDING";
     document.getElementById("alertStatusMessage").textContent = "";
+    document.getElementById("alertStatusMessage").className = "feedback";
 
     document.getElementById(
         "detailStudent"
@@ -1321,6 +1276,7 @@ function openAlertDetails(alert) {
     ).classList.add("open");
 
     document.body.style.overflow = "hidden";
+    document.querySelector(".close-modal").focus();
 }
 
 async function saveAlertStatus() {
@@ -1330,7 +1286,8 @@ async function saveAlertStatus() {
     const alertId = activeAlertId;
     const status = document.getElementById("alertStatusSelect").value;
     button.disabled = true;
-    message.textContent = "Saving...";
+    message.className = "feedback loading";
+    message.textContent = "Saving…";
     try {
         const response = await fetch(`/api/counselor/alerts/${alertId}`, {
             method: "PATCH",
@@ -1348,11 +1305,15 @@ async function saveAlertStatus() {
         if (!response.ok) throw new Error(result.error || "Could not save status.");
         if (activeAlertId === alertId) {
             document.getElementById("detailStatus").textContent = result.alert_status;
+            message.className = "feedback success";
             message.textContent = "Status saved.";
         }
         await loadAlerts();
     } catch (error) {
-        message.textContent = error.message || "Could not save status. Please try again.";
+        message.className = "feedback error";
+        message.textContent = error instanceof TypeError || error instanceof SyntaxError
+            ? "Status couldn't save. Check your connection and try again."
+            : error.message || "Could not save status. Please try again.";
     } finally {
         button.disabled = false;
     }
@@ -1361,6 +1322,7 @@ async function saveAlertStatus() {
 
 function closeAlertDetails(event) {
 
+    if (!document.getElementById("alertModalBackdrop").classList.contains("open")) return;
     if (
         event &&
         event.target &&
@@ -1374,15 +1336,24 @@ function closeAlertDetails(event) {
     ).classList.remove("open");
 
     document.body.style.overflow = "";
+    const originalRow = document.querySelector(`[data-alert-id="${activeAlertId}"]`);
+    if (originalRow) originalRow.focus();
 }
 
 
 document.addEventListener("keydown", event => {
-
-    if (event.key === "Escape") {
-        closeAlertDetails();
+    if (!document.getElementById("alertModalBackdrop").classList.contains("open")) return;
+    if (event.key === "Escape") closeAlertDetails();
+    if (event.key === "Tab") {
+        const controls = [...document.querySelectorAll(".alert-modal button:not(:disabled), .alert-modal select")];
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault(); first.focus();
+        }
     }
-
 });
 
 

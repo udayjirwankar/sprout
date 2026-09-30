@@ -6,6 +6,9 @@
     const sprout = document.querySelector(".sleepy-sprout");
 
     if (!sprout) return;
+    sprout.classList.add("is-resting");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        window.matchMedia("(pointer: coarse)").matches) return;
 
     const pupils = sprout.querySelectorAll(".sleepy-sprout__pupil");
     const body = sprout.querySelector(".sleepy-sprout__body");

@@ -1,17 +1,48 @@
-<div style="max-width:1180px; margin:16px auto; padding:12px 18px; display:flex; flex-wrap:wrap;
-    align-items:center; justify-content:space-between; gap:12px; border:1px solid #668877;
-    border-radius:14px; background:#e7f2e9; color:#244533; font:13px/1.6 system-ui,sans-serif;">
-    <span><strong>Guest workspace</strong> · Your reflections and their generated signals.</span>
-    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
-        {% if request.endpoint == 'counselor_dashboard' %}
-        <a href="{{ url_for('student_home') }}" style="color:#244533;">View student page</a>
+<header id="mainNav" class="site-header">
+    <div class="header-main">
+        {% if request.endpoint == 'student_home' %}
+        <button type="button" class="brand home-brand" onclick="showView('today')" aria-label="Sprout home">
         {% else %}
-        <a href="{{ url_for('counselor_dashboard') }}" style="color:#244533;">View counselor page</a>
+        <a class="brand home-brand" href="{{ url_for('student_home') }}" aria-label="Sprout home">
         {% endif %}
-        <form method="post" action="{{ url_for('reset_demo') }}" style="margin:0;">
+            <span class="brand-icon" aria-hidden="true">🌱</span>
+            <span class="brand-copy"><span class="brand-name">Sprout</span><span class="brand-caption">your little night garden</span></span>
+        {% if request.endpoint == 'student_home' %}</button>{% else %}</a>{% endif %}
+
+        <nav class="primary-nav nav-right" aria-label="Main navigation">
+            {% if request.endpoint == 'student_home' %}
+            <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+            <button type="button" id="todayNav" class="nav-button active" aria-current="page" onclick="showView('today')">Today</button>
+            <button type="button" id="insightsNav" class="nav-button" onclick="showView('insights')">Insights</button>
+            <button type="button" id="spaceNav" class="nav-button" onclick="showView('space')">Your Space</button>
+            <button type="button" id="aboutNav" class="nav-button" onclick="showView('about')">About</button>
+            {% else %}
+            <a class="nav-button" href="{{ url_for('student_home') }}">Student view</a>
+            <a class="nav-button active" aria-current="page" href="#alertList">Counselor view</a>
+            {% endif %}
+        </nav>
+        {% if request.endpoint == 'student_home' %}
+        <a class="quiet-button view-switch" href="{{ url_for('counselor_dashboard') }}">Counselor view <span aria-hidden="true">↗</span></a>
+        {% endif %}
+    </div>
+
+    {% if request.endpoint == 'counselor_dashboard' %}
+    <div class="header-workspace">
+        <div class="workspace-info">
+            <span class="guest-label"><span aria-hidden="true">☾</span> Guest workspace</span>
+            <details class="workspace-help">
+                <summary>Temporary history <span aria-hidden="true">ⓘ</span></summary>
+                <div class="workspace-popover">
+                    <strong>A guest prototype, without accounts.</strong>
+                    <p>This browser holds your workspace. Access expires after 8 hours of inactivity; guest records are cleaned up after 24 hours. Server restarts or deployments may also clear history.</p>
+                    <p>New workspace starts an empty space. Save a separate copy of anything you want to keep.</p>
+                </div>
+            </details>
+        </div>
+        <form method="post" action="{{ url_for('reset_demo') }}" class="workspace-reset">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" style="border:1px solid #668877; padding:8px 12px; border-radius:9px;
-                background:#f6fbf7; color:#244533; cursor:pointer; font:inherit;">New workspace</button>
+            <button type="submit" class="quiet-button reset-button">New workspace <span aria-hidden="true">＋</span></button>
         </form>
     </div>
-</div>
+    {% endif %}
+</header>

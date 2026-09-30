@@ -54,7 +54,9 @@ class SproutTests(unittest.TestCase):
     def test_home_opens_without_login_or_signup(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Guest workspace', response.data)
+        self.assertNotIn(b'Guest workspace', response.data)
+        self.assertIn(b'your little night garden', response.data)
+        self.assertIn(b'About this temporary space', response.data)
         self.assertNotIn(b'/logout', response.data)
         self.assertEqual(self.client.get('/counselor').status_code, 200)
         self.assertEqual(self.client.get('/login').status_code, 302)
