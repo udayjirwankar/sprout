@@ -1,0 +1,17 @@
+<div style="max-width:1180px; margin:16px auto; padding:12px 18px; display:flex; flex-wrap:wrap;
+    align-items:center; justify-content:space-between; gap:12px; border:1px solid #668877;
+    border-radius:14px; background:#e7f2e9; color:#244533; font:13px/1.6 system-ui,sans-serif;">
+    <span><strong>Guest workspace</strong> · Your reflections and their generated signals.</span>
+    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
+        {% if request.endpoint == 'counselor_dashboard' %}
+        <a href="{{ url_for('student_home') }}" style="color:#244533;">View student page</a>
+        {% else %}
+        <a href="{{ url_for('counselor_dashboard') }}" style="color:#244533;">View counselor page</a>
+        {% endif %}
+        <form method="post" action="{{ url_for('reset_demo') }}" style="margin:0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="border:1px solid #668877; padding:8px 12px; border-radius:9px;
+                background:#f6fbf7; color:#244533; cursor:pointer; font:inherit;">New workspace</button>
+        </form>
+    </div>
+</div>

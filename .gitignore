@@ -5,6 +5,7 @@ venv/
 env/
 .DS_Store
 security/secret.key
+security/session.key
 .env
 *.env
 database/*.db

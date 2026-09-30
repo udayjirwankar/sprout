@@ -1,17 +1,11 @@
-DROP TABLE IF EXISTS students;
-DROP TABLE IF EXISTS journal_entries;
-DROP TABLE IF EXISTS daily_stats;
-DROP TABLE IF EXISTS escalation_alerts;
-
-
-CREATE TABLE students (
+CREATE TABLE IF NOT EXISTS students (
     student_id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
-CREATE TABLE journal_entries (
+CREATE TABLE IF NOT EXISTS journal_entries (
     entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     student_id TEXT NOT NULL,
@@ -31,7 +25,7 @@ CREATE TABLE journal_entries (
 );
 
 
-CREATE TABLE daily_stats (
+CREATE TABLE IF NOT EXISTS daily_stats (
     stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     student_id TEXT NOT NULL,
@@ -45,7 +39,7 @@ CREATE TABLE daily_stats (
 );
 
 
-CREATE TABLE escalation_alerts (
+CREATE TABLE IF NOT EXISTS escalation_alerts (
     alert_id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     student_id TEXT NOT NULL,
@@ -55,6 +49,10 @@ CREATE TABLE escalation_alerts (
     signal_summary TEXT NOT NULL,
 
     status TEXT DEFAULT 'PENDING',
+
+    reviewed_at TIMESTAMP,
+
+    resolved_at TIMESTAMP,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

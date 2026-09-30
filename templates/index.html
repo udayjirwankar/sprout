@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Sprout — Your Little Space</title>
 
@@ -2418,9 +2419,17 @@ nav::before {
 
 </style>
 <link rel="stylesheet" href="{{ url_for('static', filename='sleepy-sprout/sleepy-sprout.css') }}">
+<style>
+    .save-button:disabled { cursor: wait; opacity: .75; }
+    @media (max-width: 620px) {
+        #mainNav { flex-wrap: wrap; gap: 10px; }
+        #mainNav .nav-right { width: 100%; justify-content: space-between; gap: 0; }
+        #mainNav .nav-button { padding: 8px 6px; font-size: 11px; white-space: nowrap; }
+    }
+</style>
 </head>
 
-<body>
+<body data-student-id="{{ demo_student_id }}">
 
 <div class="scroll-progress" id="scrollProgress"></div>
 
@@ -2500,6 +2509,8 @@ nav::before {
             About
         </button>
 
+        <a href="{{ url_for('counselor_dashboard') }}" class="nav-button" style="text-decoration:none;">Counselor view</a>
+
     </div>
 
 </nav>
@@ -2527,6 +2538,8 @@ nav::before {
     </iframe>
 
 <main>
+
+    {% include 'demo_banner.html' %}
 
     <!-- =========================
          TODAY
@@ -2661,7 +2674,7 @@ nav::before {
                         <span>optional</span>
                     </div>
 
-                    <div class="chips">
+                    <div class="chips" id="dayFactors">
                         <button class="chip">📚 College</button>
                         <button class="chip">👥 Friends</button>
                         <button class="chip">🏠 Family</button>
@@ -2682,7 +2695,7 @@ nav::before {
                         <span>optional</span>
                     </div>
 
-                    <div class="chips">
+                    <div class="chips" id="helpfulNeeds">
                         <button class="chip">🌿 Some quiet</button>
                         <button class="chip">💬 Someone to talk to</button>
                         <button class="chip">🎯 Motivation</button>
@@ -3035,14 +3048,7 @@ nav::before {
                     <span>Live Demo</span>
                 </a>
 
-                <a
-                    href="/counselor"
-                    class="about-link counselor-link"
-                    aria-label="Open Counselor Dashboard"
-                >
-                    <span class="about-link-icon">🩺</span>
-                    <span>Counselor Dashboard</span>
-                </a>
+
             </div>
 
             <div class="about-tagline">
@@ -3061,6 +3067,7 @@ nav::before {
 </button>
 
 
+<script src="{{ url_for('static', filename='journal-utils.js') }}"></script>
 <script>
 
     /* =========================
@@ -3712,6 +3719,7 @@ nav::before {
 
         const message = document.getElementById("message");
         const saveButton = document.getElementById("saveButton");
+        if (saveButton.disabled) return;
 
 
         function showMessage(text, type) {
@@ -3719,7 +3727,7 @@ nav::before {
             message.textContent = text;
             message.className = type + " show";
 
-            setTimeout(() => message.classList.remove("show"), 500);
+            // Leave failures visible long enough to read; a new attempt replaces them.
         }
 
 
@@ -3742,6 +3750,7 @@ nav::before {
 
 
         saveButton.classList.add("saving");
+        saveButton.disabled = true;
         saveButton.textContent = "Planting... 🌱";
 
 
@@ -3753,19 +3762,24 @@ nav::before {
                     method: "POST",
 
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
                     },
 
                     body: JSON.stringify({
-                        student_id: "MB-1024",
                         content: content,
-                        mood: selectedMood
+                        mood: selectedMood,
+                        day_factors: [...document.querySelectorAll("#dayFactors .chip.selected")].map(chip => chip.textContent.trim()),
+                        helpful_needs: [...document.querySelectorAll("#helpfulNeeds .chip.selected")].map(chip => chip.textContent.trim())
                     })
 
                 });
 
 
             const result = await response.json();
+            if (response.status === 409) {
+                throw new Error("Your demo workspace expired. Copy your draft, then refresh Sprout.");
+            }
 
 
             if (!response.ok) {
@@ -3812,7 +3826,6 @@ nav::before {
             }, 1800);
 
 
-            console.log("Local wellbeing analysis:", result);
 
 
         } catch (error) {
@@ -3820,7 +3833,7 @@ nav::before {
             console.error(error);
 
             showMessage(
-                "Couldn't save your reflection. Please try again.",
+                error.message || "Couldn't save your reflection. Please try again.",
                 "error"
             );
 
@@ -3829,6 +3842,7 @@ nav::before {
 
 
         saveButton.classList.remove("saving");
+        saveButton.disabled = false;
 
     }
 
@@ -3842,7 +3856,14 @@ nav::before {
         try {
 
             const response =
-                await fetch("/api/student/history?student_id=MB-1024");
+                await fetch("/api/student/history");
+
+            if (response.status === 409) {
+                document.getElementById("message").textContent = "Your demo workspace expired. Copy any draft, then refresh Sprout.";
+                document.getElementById("message").className = "error show";
+                return;
+            }
+            if (!response.ok) throw new Error("Unable to load your reflections.");
 
             const entries = await response.json();
 
@@ -3868,16 +3889,14 @@ nav::before {
         const dots =
             document.querySelectorAll("#weekDots .day-dot");
 
-        const recent =
-            entries.slice(0, 7).reverse();
-
-        const offset =
-            7 - recent.length;
+        const recent = SproutJournal.recentDays(entries);
 
 
         dots.forEach((dot, index) => {
 
-            const entry = recent[index - offset];
+            const { date, entry } = recent[index];
+            dot.parentElement.querySelector(".day-name").textContent = date.toLocaleDateString("en-IN", { weekday: "short" });
+            dot.title = date.toLocaleDateString("en-IN") + (entry ? ` · ${entry.mood}` : " · No check-in");
 
             const emoji =
                 entry ? (moodInfo[entry.mood]?.emoji || "🌱") : "—";
@@ -3956,7 +3975,7 @@ nav::before {
                     moodInfo[entry.mood] || { emoji: "🌱" };
 
                 const date =
-                    new Date(entry.created_at);
+                    SproutJournal.parseTimestamp(entry.created_at);
 
                 const label =
                     date.toLocaleDateString(
@@ -4047,7 +4066,7 @@ nav::before {
                     };
 
 
-                const date = new Date(entry.created_at);
+                const date = SproutJournal.parseTimestamp(entry.created_at);
 
 
                 const dateLabel =
@@ -4095,7 +4114,7 @@ nav::before {
 
                             <div class="entry-mood">
                                 ${info.emoji}
-                                ${moodName}
+                                ${escapeHtml(moodName)}
                             </div>
 
                             <div class="entry-date">
@@ -4106,6 +4125,11 @@ nav::before {
 
                         <div class="entry-content">
                             ${escapeHtml(entry.content)}
+                        </div>
+
+                        <div class="entry-context" style="margin-top:14px; font-size:12px; line-height:1.8;">
+                            ${entry.day_factors?.length ? `<div>Day factors: ${entry.day_factors.map(escapeHtml).join(" · ")}</div>` : ""}
+                            ${entry.helpful_needs?.length ? `<div>Helpful right now: ${entry.helpful_needs.map(escapeHtml).join(" · ")}</div>` : ""}
                         </div>
 
                         <div class="entry-number">
@@ -4136,7 +4160,7 @@ nav::before {
        A complete client-side reward layer.
     ========================================================= */
 
-    const STAR_JAR_KEY = "sprout_star_jar";
+    const STAR_JAR_KEY = "sprout_star_jar_actual_" + document.body.dataset.studentId;
 
     function getStarData() {
 
@@ -4163,85 +4187,12 @@ nav::before {
     }
 
 
-    function getJournalDates(entries) {
-
-        return [
-            ...new Set(
-                entries.map(entry => {
-                    const date = new Date(entry.created_at);
-                    return date.toLocaleDateString("en-CA");
-                })
-            )
-        ].sort(
-            (a, b) => new Date(a) - new Date(b)
-        );
-
-    }
-
-
     function getCurrentStreak(entries) {
-
-        const dates = getJournalDates(entries);
-
-        if (!dates.length) return 0;
-
-        let streak = 1;
-
-        for (let i = dates.length - 1; i > 0; i--) {
-
-            const current = new Date(dates[i]);
-            const previous = new Date(dates[i - 1]);
-
-            const difference = Math.round(
-                (current - previous) /
-                (1000 * 60 * 60 * 24)
-            );
-
-            if (difference === 1) {
-                streak++;
-            } else {
-                break;
-            }
-
-        }
-
-        return streak;
-
+        return SproutJournal.currentStreak(entries);
     }
-
 
     function getCompletedSevenDayBlocks(entries) {
-
-        const dates = getJournalDates(entries);
-
-        if (!dates.length) return 0;
-
-        let totalBlocks = 0;
-        let runLength = 1;
-
-        for (let i = 1; i < dates.length; i++) {
-
-            const previous = new Date(dates[i - 1]);
-            const current = new Date(dates[i]);
-
-            const difference = Math.round(
-                (current - previous) /
-                (1000 * 60 * 60 * 24)
-            );
-
-            if (difference === 1) {
-                runLength++;
-            } else {
-                totalBlocks += Math.floor(runLength / 7);
-                runLength = 1;
-            }
-
-        }
-
-        totalBlocks += Math.floor(runLength / 7);
-
-        return totalBlocks;
-
+        return SproutJournal.completedBlocks(entries);
     }
 
 

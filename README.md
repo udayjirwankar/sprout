@@ -2,7 +2,7 @@
 
 ### Private words. Minimal signal. Human support.
 
-Sprout is a privacy-first student wellbeing platform that gives students a private space to reflect while allowing authorized support staff to receive limited wellbeing signals when configured thresholds are met.
+Sprout is a student wellbeing prototype that demonstrates encrypted journaling, local text classification, and a counselor view of limited wellbeing signals. It opens directly into an empty guest workspace without accounts or passwords.
 
 > **Support students without turning personal reflection into surveillance.**
 
@@ -115,7 +115,7 @@ The counselor dashboard receives limited escalation information such as:
 - Alert status
 - Timestamp
 
-The counselor API does not return the student's raw journal text.
+The counselor API does not return raw journal text. Both demo views are scoped to the current browser workspace. A submitted student ID cannot change which workspace's records are returned. This prototype does not authenticate students or counselors.
 
 ### Local processing
 
@@ -131,6 +131,8 @@ The counselor-facing interface provides:
 - Alerts requiring attention
 - Signal overview
 - Alert details
+- Mark alerts pending, reviewed, or resolved
+- Record review and resolution timestamps
 - Privacy firewall explanation
 
 The dashboard is intentionally limited to the information needed for support triage.
@@ -209,11 +211,26 @@ The application runs locally on:
 http://127.0.0.1:5001/
 ```
 
-The counselor dashboard is available at:
+The home page opens the student view directly. Use **Counselor view** to see
+alerts generated from submitted reflections and their review workflow. Both views
+use the same browser workspace. Choose **New workspace** to start fresh.
+
+The counselor view is available at:
 
 ```text
 http://127.0.0.1:5001/counselor
 ```
+
+Each visitor starts with an empty workspace. Reflections you submit are encrypted
+and stored in that visitor's workspace. No sample journals or alerts are added.
+Alerts are created only when the local model and signal engine flag a submitted reflection.
+No journal text is stored in the browser cookie. There is no login or signup.
+
+Demo records are kept in `database/demo.db`, separate from the existing
+`database/sprout.db`. Existing records and any earlier account data are preserved;
+this demo version does not open them. Browser sessions expire after eight hours
+of inactivity. Old demo records are cleaned up after 24 hours when a new workspace
+is created. This is a demonstration, rather than a permanent personal journal.
 
 ## Important Security Note
 
@@ -223,9 +240,27 @@ Do **not** commit:
 
 ```text
 security/secret.key
+security/session.key
 ```
 
-The local SQLite database is also excluded from Git.
+The local SQLite database is also excluded from Git. Starting the app creates
+missing tables and adds missing columns; it does not erase saved records.
+Existing records are preserved; new workspaces start empty.
+
+A signed Flask cookie identifies the demo workspace and carries a CSRF token.
+It contains no journal text, account details, or passwords. The signing secret is
+generated once for local use.
+
+Optional configuration:
+
+- `SPROUT_DEMO_DB_PATH`: alternative SQLite path for demo records.
+- `SPROUT_ENCRYPTION_KEY`: an existing Fernet key; keep it stable to read saved journals.
+- `SPROUT_SESSION_SECRET`: a stable secret for signing browser workspace cookies.
+- `SPROUT_COOKIE_SECURE=1`: use secure cookies when serving over HTTPS.
+- `SPROUT_DEBUG=1`: explicitly enable local development debugging.
+
+Keep the database and its encryption key together when making a private backup.
+Changing the encryption key does not re-encrypt existing journal entries.
 
 This repository contains the application source and model artifacts, rather than private local data or encryption secrets.
 
@@ -239,7 +274,7 @@ A production system would require additional work including:
 
 - More extensive model validation
 - Bias and fairness evaluation
-- Stronger authentication and authorization
+- Authentication and authorization for real student/counselor use
 - Secure key management
 - Production database infrastructure
 - Audit logging
@@ -270,3 +305,18 @@ Built by:
 **Uday Jirwankar**
 
 > Private words. Minimal signal. Human support.
+
+
+## Verification
+
+These checks use temporary databases and a temporary encryption key. They do not
+read or modify your real journal database.
+
+```bash
+python3 -m unittest discover -s tests -v
+node tests/test_journal_utils.js
+```
+
+The checks cover data preservation on restart, legacy schema upgrades, workspace
+isolation, scoped counselor alerts, CSRF protection, atomic journal saving, saved
+context, alert status changes, timezone handling, and streak logic.
